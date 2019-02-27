@@ -1,6 +1,10 @@
 #ifndef QUANTUM_STATE_H
 #define QUANTUM_STATE_H
 
+#include <vector>
+
+#include "quantum_gate.h"
+
 //TODO: define API for creating and manipulating quantum states
 
 class QuantumState {

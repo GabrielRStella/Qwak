@@ -7,6 +7,8 @@ class QuantumGate {
   
 };
 
-//TODO: 
+//TODO: ...everything?
+//static methods to create Quantum Gates of standard types (H, R_k, SWAP, etc)
+//and tensor products and whatnot
 
 #endif //QUANTUM_GATE_H
