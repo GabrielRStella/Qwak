@@ -18,8 +18,8 @@ using GiNaC::matrix;
 
 class QuantumState {
 private:
-  //TODO: data members
 
+  //number of qubits
   int n;
 
   //column vector of quantum state
@@ -52,8 +52,6 @@ public:
   void reset();
 
   bool isEntangled() const;
-
-  //TODO: make sure non-const states can call the const function overload
 
   //tensor two states together, this tensor that
   QuantumState tensor(const QuantumState& other) const;
