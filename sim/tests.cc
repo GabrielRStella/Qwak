@@ -2,10 +2,16 @@
 
 #include <iostream>
 
+using namespace Qwality;
+
 int main() {
-  QuantumState qs;
+  QuantumState qs(5);
+  QuantumGate h = H();
 
   std::cout << "Hi!" << std::endl;
+
+  QuantumState qs2 = qs.applyFull(h);
+  qs.applyFull_(h);
 
   return 0;
 }
