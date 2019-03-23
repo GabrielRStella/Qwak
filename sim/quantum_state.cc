@@ -7,10 +7,10 @@ QuantumState::QuantumState(int n_qubits, int state) : n(n_qubits), dim(1 << n), 
   amplitudes(state, 0) = 1;
 }
 
-//TODO
+//TODO GS
 QuantumState::QuantumState(const QuantumState& cp) {}
 
-//TODO
+//TODO GS
 QuantumState& QuantumState::operator=(const QuantumState& cp) {}
 
 int QuantumState::getN() const {
@@ -25,55 +25,55 @@ const matrix& QuantumState::getAmplitudes() const {
   return amplitudes;
 }
 
-//TODO
+//TODO GS
 double QuantumState::getProbability(int qubit) const {}
 
-//TODO
+//TODO GS
 int QuantumState::sample() const {}
 
-//TODO
+//TODO GS
 QuantumState QuantumState::measure() const {}
 
-//TODO
+//TODO GS
 void QuantumState::measure_() {}
 
-//TODO
+//TODO GS
 int QuantumState::sample(int qubit) const {}
 
-//TODO
+//TODO GS
 QuantumState QuantumState::measure(int qubit) const {}
 
-//TODO
+//TODO GS
 void QuantumState::measure_(int qubit) {}
 
-//TODO
+//TODO GS
 void QuantumState::reset() {}
 
-//TODO
+//TODO GS
 bool QuantumState::isEntangled() const {}
 
-//TODO
+//TODO GS
 QuantumState QuantumState::tensor(const QuantumState& other) const {}
 
-//TODO
+//TODO GS
 void QuantumState::tensor_(const QuantumState& other) {}
 
-//TODO
+//TODO GS
 void QuantumState::untensor(vector<QuantumState>& receiver) const {}
 
-//TODO
+//TODO GS
 vector<QuantumState> QuantumState::untensor() const {}
 
-//TODO
+//TODO GS
 QuantumState QuantumState::applyPartial(const QuantumGate& gate, const std::vector<std::size_t>& qubits) const {}
 
-//TODO
+//TODO GS
 void QuantumState::applyPartial_(const QuantumGate& gate, const std::vector<std::size_t>& qubits) {}
 
-//TODO
+//TODO GS
 QuantumState QuantumState::applyFull(const QuantumGate& gate) const {}
 
-//TODO
+//TODO GS
 void QuantumState::applyFull_(const QuantumGate& gate) {}
 
 }

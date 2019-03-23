@@ -10,7 +10,7 @@ QuantumGate::QuantumGate(int n_qubits) : n(n_qubits), dim(1 << n), matrix(dim, d
   }
 }
 
-//TODO
+//TODO JB
 QuantumGate::QuantumGate(matrix& values) {}
 
 int QuantumGate::getN() const {
@@ -25,46 +25,46 @@ matrix& QuantumGate::getValues() {
   return values;
 }
 
-//TODO
+//TODO JB
 QuantumGate QuantumGate::tensor(const QuantumGate& other) const {}
 
-//TODO
+//TODO JB
 void QuantumGate::tensor_(const QuantumGate& other) {}
 
-//TODO
+//TODO JB
 QuantumGate QuantumGate::andThen(const QuantumGate& next) const {}
 
-//TODO
+//TODO JB
 void QuantumGate::andThen_(const QuantumGate& next) {}
 
-//TODO
+//TODO JB
 QuantumGate QuantumGate::conjugate() const {}
 
-//TODO
+//TODO JB
 void QuantumGate::conjugate_() {}
 
-//TODO
+//TODO JB
 const QuantumGate& I() {}
 
-//TODO
+//TODO JB
 const QuantumGate& H() {}
 
-//TODO
+//TODO JB
 const QuantumGate& X() {}
 
-//TODO
+//TODO JB
 const QuantumGate& Y() {}
 
-//TODO
+//TODO JB
 const QuantumGate& Z() {}
 
-//TODO
+//TODO JB
 QuantumGate R(int k) {}
 
-//TODO
+//TODO JB
 QuantumGate control(const QuantumGate& gate) {}
 
-//TODO
+//TODO JB
 QuantumGate swap(vector<int>& indices) {}
 
 }
