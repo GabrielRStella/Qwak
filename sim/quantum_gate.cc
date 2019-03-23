@@ -2,8 +2,13 @@
 
 namespace Qwality {
 
-//TODO
-QuantumGate::QuantumGate(int n_qubits) {}
+QuantumGate::QuantumGate(int n_qubits) : n(n_qubits), dim(1 << n), matrix(dim, dim) {
+  //have to make identity matrix here
+  //because matrix(r, c) generates 0-matrix
+  for(int i = 0; i < dim; i++) {
+    matrix(i, i) = 1;
+  }
+}
 
 //TODO
 QuantumGate::QuantumGate(matrix& values) {}

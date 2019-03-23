@@ -2,9 +2,9 @@
 
 namespace Qwality {
 
-//TODO
-QuantumState::QuantumState(int n_qubits) : n(n_qubits), amplitudes(1 << n, 1 << n) {
-  //TODO: have to make identity matrix here
+QuantumState::QuantumState(int n_qubits, int state) : n(n_qubits), dim(1 << n), amplitudes(dim, 1) {
+  //set proper element of amplitudes to 1 (based on "state" parameter)
+  amplitudes(state, 0) = 1;
 }
 
 //TODO

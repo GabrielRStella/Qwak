@@ -17,6 +17,8 @@ using GiNaC::matrix;
 class QuantumGate {
 private:
   int n;
+  int dim;
+
   matrix values;
 
 public:
