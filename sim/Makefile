@@ -18,7 +18,7 @@ all: quantum_simulator.a tests
 test: tests
 	./tests
 
-tests: quantum_simulator.a tests.o
+tests: tests.o quantum_simulator.a
 	$(CXX) $^ $(LDFLAGS) -o $@
 
 #Generates a static library

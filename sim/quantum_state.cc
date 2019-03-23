@@ -3,13 +3,15 @@
 namespace Qwality {
 
 //TODO
-QuantumState::QuantumState(int n_qubits) {}
+QuantumState::QuantumState(int n_qubits) : n(n_qubits), amplitudes(1 << n, 1 << n) {
+  //TODO: have to make identity matrix here
+}
 
 //TODO
 QuantumState::QuantumState(const QuantumState& cp) {}
 
 //TODO
-QuantumState::QuantumState& operator=(const QuantumState& cp) {}
+QuantumState& QuantumState::operator=(const QuantumState& cp) {}
 
 int QuantumState::getN() const {
   return n;

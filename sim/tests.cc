@@ -4,6 +4,11 @@
 
 using namespace Qwality;
 
+/*
+TODO:
+-"circuit" class that combines states + gates and results in a mixture of qubit states + classical bits
+*/
+
 int main() {
   QuantumState qs(5);
   QuantumGate h = H();

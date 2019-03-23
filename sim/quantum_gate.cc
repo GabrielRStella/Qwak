@@ -16,7 +16,7 @@ const matrix& QuantumGate::getValues() const {
   return values;
 }
 
-matrix& getValues() {
+matrix& QuantumGate::getValues() {
   return values;
 }
 
