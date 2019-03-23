@@ -47,13 +47,13 @@ public:
 //basic operators
 
 //identity
-const QuantumGate& I();
+QuantumGate I();
 //hadamard
-const QuantumGate& H();
+QuantumGate H();
 //pauli operators
-const QuantumGate& X();
-const QuantumGate& Y();
-const QuantumGate& Z();
+QuantumGate X();
+QuantumGate Y();
+QuantumGate Z();
 
 //phase rotation gate
 QuantumGate R(int k);

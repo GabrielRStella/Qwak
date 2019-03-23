@@ -2,11 +2,11 @@
 
 namespace Qwality {
 
-QuantumGate::QuantumGate(int n_qubits) : n(n_qubits), dim(1 << n), matrix(dim, dim) {
+QuantumGate::QuantumGate(int n_qubits) : n(n_qubits), dim(1 << n), values(dim, dim) {
   //have to make identity matrix here
   //because matrix(r, c) generates 0-matrix
   for(int i = 0; i < dim; i++) {
-    matrix(i, i) = 1;
+    values(i, i) = 1;
   }
 }
 
@@ -43,20 +43,23 @@ QuantumGate QuantumGate::conjugate() const {}
 //TODO JB
 void QuantumGate::conjugate_() {}
 
-//TODO JB
-const QuantumGate& I() {}
+//TODO JB (make sure this is correct)
+QuantumGate I() {
+  matrix I{{1, 0}, {0, 1}};
+  return I;
+}
 
 //TODO JB
-const QuantumGate& H() {}
+QuantumGate H() {}
 
 //TODO JB
-const QuantumGate& X() {}
+QuantumGate X() {}
 
 //TODO JB
-const QuantumGate& Y() {}
+QuantumGate Y() {}
 
 //TODO JB
-const QuantumGate& Z() {}
+QuantumGate Z() {}
 
 //TODO JB
 QuantumGate R(int k) {}
