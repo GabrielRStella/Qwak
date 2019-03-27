@@ -73,6 +73,18 @@ double QuantumState::getProbabilityDoubleOfQubit(int qubit) const {
   throw runtime_error("Invalid expression found while calculating probability.");
 }
 
+void getProbabilities(vector<double>& receiver) const {
+  for(int state = 0; state < dim; state++) {
+    receiver.push_back(getProbabilityDoubleOfState(state));
+  }
+}
+
+vector<double> getProbabilities() const {
+  vector<double> ret;
+  getProbabilities(ret);
+  return ret;
+}
+
 int QuantumState::sample() const {
   double guess = get_random_number(); //generate random # in [0, 1)
   for(int choice = 0; choice < n; choice++) {
@@ -94,40 +106,36 @@ void QuantumState::measure_() {
   amplitudes(state, 0) = 1;
 }
 
-//TODO GS
-int QuantumState::sample(int qubit) const {
+bool QuantumState::sample(int qubit) const {
   double guess = get_random_number();
   double p = getProbabilityDoubleOfQubit(qubit);
 
-  bool measurement = (guess < p);
-  int mask = QuantumState::maskQubitOn(qubit);
-
-  ex total_probability = 0;
-  for(int state = 0; state < dim; state++) {
-    if(bool(mask & state) == measurement) {
-      total_probability += getProbabilityOfState(state);
-    }
-  }
+  return (guess < p);
 }
 
-//TODO GS
 QuantumState QuantumState::measure(int qubit) const {
-  double guess = get_random_number();
-  double p = getProbabilityDoubleOfQubit(qubit);
+  bool measurement = sample(qubit);
 
-  bool measurement = (guess < p);
-  int mask = QuantumState::maskQubitOn(qubit);
+  vector<double> probabilities;
+  getProbabilities(probabilities);
 
+  //count states and probabilities
   ex total_probability = 0;
   for(int state = 0; state < dim; state++) {
     if(bool(mask & state) == measurement) {
-      total_probability += getProbabilityOfState(state);
+      total_probability += probabilities[state];
     }
   }
 
-  QuantumState measured(n);
-  matrix& amps = measured.amplitudes;
+  //fill in states and probabilities
+  matrix& amps = matrix(dim, 1);
+  for(int state = 0; state < dim; state++) {
+    if(bool(mask & state) == measurement) {
+      amps(state, 0) = probabilities[state] / total_probability;
+    }
+  }
 
+  return QuantumState(n, amps);
 }
 
 void QuantumState::measure_(int qubit) {
