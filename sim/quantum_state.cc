@@ -73,13 +73,13 @@ double QuantumState::getProbabilityDoubleOfQubit(int qubit) const {
   throw runtime_error("Invalid expression found while calculating probability.");
 }
 
-void getProbabilities(vector<double>& receiver) const {
+void QuantumState::getProbabilities(vector<double>& receiver) const {
   for(int state = 0; state < dim; state++) {
     receiver.push_back(getProbabilityDoubleOfState(state));
   }
 }
 
-vector<double> getProbabilities() const {
+vector<double> QuantumState::getProbabilities() const {
   vector<double> ret;
   getProbabilities(ret);
   return ret;
@@ -115,6 +115,7 @@ bool QuantumState::sample(int qubit) const {
 
 QuantumState QuantumState::measure(int qubit) const {
   bool measurement = sample(qubit);
+  int mask = QuantumState::maskQubitOn(qubit);
 
   vector<double> probabilities;
   getProbabilities(probabilities);
@@ -128,7 +129,7 @@ QuantumState QuantumState::measure(int qubit) const {
   }
 
   //fill in states and probabilities
-  matrix& amps = matrix(dim, 1);
+  matrix amps = matrix(dim, 1);
   for(int state = 0; state < dim; state++) {
     if(bool(mask & state) == measurement) {
       amps(state, 0) = probabilities[state] / total_probability;
@@ -174,12 +175,16 @@ vector<QuantumState> QuantumState::untensor() const {
 }
 
 //TODO GS
-QuantumState QuantumState::applyPartial(const QuantumGate& gate, const std::vector<std::size_t>& qubits) const {
+QuantumState QuantumState::applyPartial(const QuantumGate& gate, const std::vector<int>& qubits) const {
+  int mask = 0;
+  for(auto qubit : qubits) {
+    mask |= (1 << qubit);
+  }
   QWALITY_NOT_SUPPORTED
 }
 
 //TODO GS
-void QuantumState::applyPartial_(const QuantumGate& gate, const std::vector<std::size_t>& qubits) {
+void QuantumState::applyPartial_(const QuantumGate& gate, const std::vector<int>& qubits) {
   QWALITY_NOT_SUPPORTED
 }
 
