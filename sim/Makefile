@@ -24,7 +24,7 @@ tests: tests.o quantum_simulator.a
 #Generates a static library
 #https://stackoverflow.com/a/32168987
 #Consider using a .so (runtime library)?
-quantum_simulator.a: quantum_state.o quantum_gate.o
+quantum_simulator.a: quantum_state.o quantum_gate.o util.o
 	ar rcs $@ $^
 
 clean:
