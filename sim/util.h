@@ -2,6 +2,9 @@
 #define QUANTUM_UTIL_H
 
 #include <stdexcept>
+#include <iostream>
+
+#include <cstdio>
 
 #include <ginac/ginac.h>
 
@@ -16,9 +19,6 @@ using std::runtime_error;
 //also: is there a better name than index_t?
 typedef unsigned index_t;
 
-//TODO: convert |abcd> to |dcba>
-int flip_bit_order(int bits, int n);
-
 matrix conjugate_transpose(const matrix& m);
 
 //takes two COLUMN vectors
@@ -28,6 +28,13 @@ matrix outer_product(const matrix& m1, const matrix& m2);
 matrix tensor_product(const matrix& m1, const matrix& m2);
 
 double get_random_number(double min = 0, double max = 1);
+
+std::ostream& print_binary(int state, int n, std::ostream& o);
+
+//convert |abcd> to |dcba>
+int flip_bit_order(int bits, int n);
+
+std::ostream& print_ket(int state, int n, std::ostream& o);
 
 } //end namespace
 

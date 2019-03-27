@@ -52,4 +52,27 @@ double get_random_number(double min, double max) {
   return val * (max - min) + min;
 }
 
+std::ostream& print_binary(int state, int n, std::ostream& o) {
+  for(int i = 0; i < n; i++) {
+    bool b = (state >> i) & 1;
+    o << (b ? "1" : "0");
+  }
+  return o;
+}
+
+int flip_bit_order(int bits, int n) {
+  int res = 0;
+  for(int bit = 0; bit < n; bit++) {
+    if(bits & (1 << bit)) res |= (1 << (n - bit - 1));
+  }
+  return res;
+}
+
+std::ostream& print_ket(int state, int n, std::ostream& o) {
+  o << "|";
+  print_binary(flip_bit_order(state, n), n, o);
+  o << ">";
+  return o;
+}
+
 }

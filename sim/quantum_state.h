@@ -2,10 +2,17 @@
 #define QUANTUM_STATE_H
 
 #include <vector>
+#include <iostream>
 
 #include <ginac/ginac.h>
 
 #include "quantum_gate.h"
+
+//annoying forward declaration crap to resolve namespace issues...
+namespace Qwality {
+class QuantumState;
+}
+std::ostream& operator<<(std::ostream& o, const Qwality::QuantumState& qs);
 
 namespace Qwality {
 
@@ -89,6 +96,8 @@ public:
   //TODO: define arithmetic operators?
   //might require sub-state operator (like H*a[{2}]) where a[2] returns a sub-state containing info about what qubits to use
   //also automatic type conversions e.g. QuantumState -> int to automatically sample
+
+  friend std::ostream& ::operator<<(std::ostream& o, const QuantumState& qs);
 
 };
 

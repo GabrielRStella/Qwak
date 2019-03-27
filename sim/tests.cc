@@ -6,37 +6,50 @@ using namespace Qwality;
 
 /*
 TODO:
--output operators?
+-output operators
 -"circuit" class that combines states + gates and results in a mixture of qubit states + classical bits
-*/
-
-/*
-also note: when subscripting QuantumState, qubits are referenced in flipped notation.
-i.e., |0010> = 0b0100 = 4
 */
 
 using namespace std;
 
 int main() {
-  QuantumGate f = H();
 
   cout << "Hi!" << endl;
 
   {
+    QuantumState qs(2);
+    cout << "qs: " << qs << endl;
+    cout << "H(qs[0]): " << qs.applyPartial(H(), {0}) << endl;
+  }
+
+  {
     QuantumState qs;
-    cout << "f: " << f.getValues() << endl;
-    cout << qs.getAmplitudes() << endl;
-    QuantumState qs2 = qs.applyFull(f);
-    cout << qs2.getAmplitudes() << endl;
-    cout << QuantumState(1, 1).applyFull(f).getAmplitudes() << endl;
-    cout << QuantumState(1, 1).applyFull(f).applyFull(f).getAmplitudes() << endl;
+    cout << "qs: " << qs << endl;
+    cout << "H(qs): " << qs.applyFull(H()) << endl;
   }
 
   {
     QuantumState qs(2);
-    cout << "f: " << f.getValues() << endl;
-    cout << qs.getAmplitudes() << endl;
-    cout << qs.applyPartial(f, {0}).getAmplitudes() << endl;
+    matrix mH({{1, 1}, {1, -1}});
+    QuantumGate HH(2, tensor_product(mH, mH));
+    cout << "qs: " << qs << endl;
+    cout << "HH(qs): " << qs.applyFull(HH) << endl;
+    cout << "H(qs[0]): " << qs.applyPartial(H(), {0}) << endl;
+  }
+
+  {
+    QuantumState qs1;
+    QuantumState qs2(2, 1);
+    QuantumState qs3(1, 1);
+    //qs3.applyFull_(H());
+
+    cout << "qs1: " << qs1 << endl;
+    cout << "qs2: " << qs2 << endl;
+    cout << "qs3: " << qs3 << endl;
+    cout << "qs1 ** qs2: " << qs1.tensor(qs2) << endl;
+    cout << "qs2 ** qs1: " << qs2.tensor(qs1) << endl;
+    cout << "qs1 ** qs3: " << qs1.tensor(qs3) << endl;
+    cout << "qs1 ** qs3 ** qs2: " << qs1.tensor(qs3).tensor(qs2) << endl;
   }
 
   return 0;

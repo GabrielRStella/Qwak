@@ -174,9 +174,15 @@ vector<QuantumState> QuantumState::untensor() const {
   return ret;
 }
 
-QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<int>& qubits) const {
-  int len = qubits.size();
+QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<int>& qubits_) const {
+  int len = qubits_.size();
   int dim2 = 1 << len;
+
+  //adjust to local positioning
+  vector<int> qubits(len);
+  for(int q = 0; q < len; q++) {
+    qubits[q] = n - qubits_[q] - 1;
+  }
 
   //construct a mask for removing the partial state
   int mask = 0;
@@ -191,6 +197,7 @@ QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<in
 
   for(int state = 0; state < dim; state++) {
     const ex& scaleFromThis = amplitudes(state, 0);
+    if(scaleFromThis.is_zero()) continue;
     //construct partial state
     int partialState = 0;
     for(int qubit = 0; qubit < len; qubit++) {
@@ -199,6 +206,7 @@ QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<in
     //apply gate
     for(int newPartialState = 0; newPartialState < dim2; newPartialState++) {
       const ex& scaleFromGate = values(partialState, newPartialState);
+      if(scaleFromGate.is_zero()) continue;
       int newState = state & mask;
       for(int qubit = 0; qubit < len; qubit++) {
         if(newPartialState & (1 << qubit)) newState |= (1 << qubits[qubit]);
@@ -210,9 +218,8 @@ QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<in
   return QuantumState(n, result);
 }
 
-//TODO GS
 void QuantumState::applyPartial_(const QuantumGate& gate, const vector<int>& qubits) {
-  QWALITY_NOT_SUPPORTED
+  amplitudes = applyPartial(gate, qubits).amplitudes; //aha, inefficient but SIMPLE
 }
 
 QuantumState QuantumState::applyFull(const QuantumGate& gate) const {
@@ -224,3 +231,19 @@ void QuantumState::applyFull_(const QuantumGate& gate) {
 }
 
 } //end namespace
+
+std::ostream& operator<<(std::ostream& o, const Qwality::QuantumState& qs) {
+  bool printed = false;
+  for(int state = 0; state < qs.dim; state++) {
+
+    const GiNaC::ex& amp = qs.amplitudes(state, 0);
+    if(!amp.is_zero()) {
+      if(printed) o << "+";
+
+      if(!amp.is_equal(GiNaC::ex(1))) o << amp;
+      Qwality::print_ket(state, qs.n, o);
+      printed = true;
+    }
+  }
+  return o;
+}
