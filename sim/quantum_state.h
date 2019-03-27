@@ -79,8 +79,8 @@ public:
     The given vector of qubits determines which parts of this state (and in what order)
     to apply the gate.
   */
-  QuantumState applyPartial(const QuantumGate& gate, const std::vector<int>& qubits) const;
-  void applyPartial_(const QuantumGate& gate, const std::vector<int>& qubits);
+  QuantumState applyPartial(const QuantumGate& gate, const vector<int>& qubits) const;
+  void applyPartial_(const QuantumGate& gate, const vector<int>& qubits);
 
   //simple matrix multiplication
   QuantumState applyFull(const QuantumGate& gate) const;

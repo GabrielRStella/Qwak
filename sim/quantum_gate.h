@@ -23,7 +23,7 @@ private:
 
 public:
   QuantumGate(int n_qubits); //generate n-qubit identity
-  QuantumGate(matrix& values);
+  QuantumGate(int n_qubits, const matrix& values);
 
   int getN() const;
 

@@ -175,16 +175,44 @@ vector<QuantumState> QuantumState::untensor() const {
 }
 
 //TODO GS
-QuantumState QuantumState::applyPartial(const QuantumGate& gate, const std::vector<int>& qubits) const {
+QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<int>& qubits) const {
+  int len = qubits.size();
+  int dim2 = 1 << len;
+
+  //construct a mask for removing the partial state
   int mask = 0;
   for(auto qubit : qubits) {
     mask |= (1 << qubit);
   }
-  QWALITY_NOT_SUPPORTED
+  mask = ~mask;
+
+  matrix result(1 << dim, 1);
+
+  const matrix& values = gate.getValues();
+
+  for(int state = 0; state < dim; state++) {
+    const ex& scaleFromThis = amplitudes(state, 0);
+    //construct partial state
+    int partialState = 0;
+    for(int qubit = 0; qubit < len; qubit++) {
+      if(state & (1 << qubits[qubit])) partialState |= (1 << qubit);
+    }
+    //apply gate
+    for(int newPartialState = 0; newPartialState < dim2; newPartialState++) {
+      const ex& scaleFromGate = values(partialState, newPartialState);
+      int newState = state & mask;
+      for(int qubit = 0; qubit < len; qubit++) {
+        if(newPartialState & (1 << qubit)) newState |= (1 << qubits[qubit]);
+      }
+      result(newState, 0) += scaleFromThis * scaleFromGate;
+    }
+  }
+
+  return QuantumState(n, result);
 }
 
 //TODO GS
-void QuantumState::applyPartial_(const QuantumGate& gate, const std::vector<int>& qubits) {
+void QuantumState::applyPartial_(const QuantumGate& gate, const vector<int>& qubits) {
   QWALITY_NOT_SUPPORTED
 }
 

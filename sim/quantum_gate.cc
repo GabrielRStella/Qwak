@@ -10,8 +10,7 @@ QuantumGate::QuantumGate(int n_qubits) : n(n_qubits), dim(1 << n), values(dim, d
   }
 }
 
-//TODO JB
-QuantumGate::QuantumGate(matrix& values) {}
+QuantumGate::QuantumGate(int n_qubits, const matrix& values_) : n(n_qubits), dim(1 << n), values(values_) {}
 
 int QuantumGate::getN() const {
   return n;
@@ -46,11 +45,14 @@ void QuantumGate::conjugate_() {}
 //TODO JB (make sure this is correct)
 QuantumGate I() {
   matrix I{{1, 0}, {0, 1}};
-  return I;
+  return QuantumGate(1, I);
 }
 
 //TODO JB
-QuantumGate H() {}
+QuantumGate H() {
+  matrix H{{1, 1}, {1, -1}};
+  return QuantumGate(1, H.mul_scalar(ex(1)/sqrt(ex(2))));
+}
 
 //TODO JB
 QuantumGate X() {}
