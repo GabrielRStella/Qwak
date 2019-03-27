@@ -10,22 +10,34 @@ TODO:
 -"circuit" class that combines states + gates and results in a mixture of qubit states + classical bits
 */
 
+/*
+also note: when subscripting QuantumState, qubits are referenced in flipped notation.
+i.e., |0010> = 0b0100 = 4
+*/
+
+using namespace std;
+
 int main() {
-  QuantumState qs;
   QuantumGate f = H();
 
-  std::cout << "Hi!" << std::endl;
+  cout << "Hi!" << endl;
 
-  std::cout << qs.getAmplitudes() << std::endl;
-  std::cout << f.getValues() << std::endl;
+  {
+    QuantumState qs;
+    cout << "f: " << f.getValues() << endl;
+    cout << qs.getAmplitudes() << endl;
+    QuantumState qs2 = qs.applyFull(f);
+    cout << qs2.getAmplitudes() << endl;
+    cout << QuantumState(1, 1).applyFull(f).getAmplitudes() << endl;
+    cout << QuantumState(1, 1).applyFull(f).applyFull(f).getAmplitudes() << endl;
+  }
 
-  QuantumState qs2 = qs.applyFull(f);
-  std::cout << qs2.getAmplitudes() << std::endl;
-
-  //qs.applyFull_(f);
-
-  std::cout << QuantumState(1, 1).applyFull(f).getAmplitudes() << std::endl;
-  std::cout << QuantumState(1, 1).applyFull(f).applyFull(f).getAmplitudes() << std::endl;
+  {
+    QuantumState qs(2);
+    cout << "f: " << f.getValues() << endl;
+    cout << qs.getAmplitudes() << endl;
+    cout << qs.applyPartial(f, {0}).getAmplitudes() << endl;
+  }
 
   return 0;
 }

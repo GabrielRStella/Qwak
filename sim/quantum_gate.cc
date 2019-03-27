@@ -42,13 +42,11 @@ QuantumGate QuantumGate::conjugate() const {}
 //TODO JB
 void QuantumGate::conjugate_() {}
 
-//TODO JB (make sure this is correct)
 QuantumGate I() {
   matrix I{{1, 0}, {0, 1}};
   return QuantumGate(1, I);
 }
 
-//TODO JB
 QuantumGate H() {
   matrix H{{1, 1}, {1, -1}};
   return QuantumGate(1, H.mul_scalar(ex(1)/sqrt(ex(2))));

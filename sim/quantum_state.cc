@@ -174,7 +174,6 @@ vector<QuantumState> QuantumState::untensor() const {
   return ret;
 }
 
-//TODO GS
 QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<int>& qubits) const {
   int len = qubits.size();
   int dim2 = 1 << len;
@@ -186,7 +185,7 @@ QuantumState QuantumState::applyPartial(const QuantumGate& gate, const vector<in
   }
   mask = ~mask;
 
-  matrix result(1 << dim, 1);
+  matrix result(dim, 1);
 
   const matrix& values = gate.getValues();
 

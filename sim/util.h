@@ -16,6 +16,9 @@ using std::runtime_error;
 //also: is there a better name than index_t?
 typedef unsigned index_t;
 
+//TODO: convert |abcd> to |dcba>
+int flip_bit_order(int bits, int n);
+
 matrix conjugate_transpose(const matrix& m);
 
 //takes two COLUMN vectors
