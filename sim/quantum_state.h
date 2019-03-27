@@ -19,6 +19,9 @@ using GiNaC::matrix;
 class QuantumState {
 private:
 
+  static int maskQubitOn(int qubit);
+  static int maskQubitOff(int qubit);
+
   //number of qubits
   int n;
   int dim;
@@ -26,11 +29,13 @@ private:
   //column vector of quantum state
   matrix amplitudes;
 
+  QuantumState(int n_qubits, matrix m);
+
 public:
   //TODO:
   //accessors and modifiers
 
-  QuantumState(int n_qubits, int state = 0); //initializes to |state>
+  QuantumState(int n_qubits = 1, int state = 0); //initializes to |state>
   QuantumState(const QuantumState& cp);
 
   QuantumState& operator=(const QuantumState& cp);
@@ -38,7 +43,10 @@ public:
   int getN() const;
   matrix& getAmplitudes();
   const matrix& getAmplitudes() const;
-  double getProbability(int qubit) const;
+  ex getProbabilityOfState(int state) const;
+  double getProbabilityDoubleOfState(int state) const;
+  ex getProbabilityOfQubit(int qubit) const;
+  double getProbabilityDoubleOfQubit(int qubit) const;
 
   int sample() const; //randomly samples the entire state and produces a measurement
   QuantumState measure() const;
@@ -81,6 +89,6 @@ public:
 
 };
 
-}
+} //end namespace
 
 #endif //QUANTUM_STATE_H
