@@ -51,8 +51,8 @@ void QuantumGate::conjugate_() {
 }
 
 QuantumGate I() {
-  matrix I{{1, 0}, {0, 1}};
-  return QuantumGate(1, I);
+  // matrix I{{1, 0}, {0, 1}};
+  return QuantumGate(1);
 }
 
 QuantumGate H() {
@@ -76,12 +76,20 @@ QuantumGate Z() {
 	return QuantumGate(1, Z);
 }
 
-
-QuantumGate R(int k) {
+QuantumGate R(int k) { 
+	matrix R_k{{1, 0}, {0, pow(Euler,(2*Pi*I/(pow(2,k))))}};
+	return QuantumGate(1, R_k);
 }
 
-
-QuantumGate control(const QuantumGate& gate) {}
+QuantumGate control(const QuantumGate& gate) {
+	QuantumGate result(gate.n + 1);
+	for(int i = 0; i < gate.n; ++i) {
+		for(int j = 0; j < gate.n; ++j) {
+			result.values(j + gate.n, i + gate.n) = gate.values(j,i);
+		}
+	}
+	return result;
+}
 
 QuantumGate swap(vector<int>& indices) {}
 
