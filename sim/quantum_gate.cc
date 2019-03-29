@@ -24,11 +24,15 @@ matrix& QuantumGate::getValues() {
   return values;
 }
 
-//TODO JB
-QuantumGate QuantumGate::tensor(const QuantumGate& other) const {}
+QuantumGate QuantumGate::tensor(const QuantumGate& other) const {
+	return QuantumGate(n + other.n, tensor_product(values, other.values));
+}
 
-//TODO JB
-void QuantumGate::tensor_(const QuantumGate& other) {}
+void QuantumGate::tensor_(const QuantumGate& other) {
+	values = tensor_product(values, other.values);
+	n += other.n;
+	dim <<= other.n;
+}
 
 //TODO JB
 QuantumGate QuantumGate::andThen(const QuantumGate& next) const {}
