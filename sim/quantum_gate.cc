@@ -34,17 +34,21 @@ void QuantumGate::tensor_(const QuantumGate& other) {
 	dim <<= other.n;
 }
 
-//TODO JB
-QuantumGate QuantumGate::andThen(const QuantumGate& next) const {}
+QuantumGate QuantumGate::andThen(const QuantumGate& next) const {
+	return QuantumGate(n, next.values.mul(values));
+}
 
-//TODO JB
-void QuantumGate::andThen_(const QuantumGate& next) {}
+void QuantumGate::andThen_(const QuantumGate& next) {
+	values = next.values.mul(values);
+}
 
-//TODO JB
-QuantumGate QuantumGate::conjugate() const {}
+QuantumGate QuantumGate::conjugate() const {
+	return QuantumGate(n, conjugate_transpose(values));
+}
 
-//TODO JB
-void QuantumGate::conjugate_() {}
+void QuantumGate::conjugate_() {
+	values = conjugate_transpose(values);
+}
 
 QuantumGate I() {
   matrix I{{1, 0}, {0, 1}};
@@ -56,22 +60,29 @@ QuantumGate H() {
   return QuantumGate(1, H.mul_scalar(ex(1)/sqrt(ex(2))));
 }
 
-//TODO JB
-QuantumGate X() {}
+QuantumGate X() {
+	matrix X{{0, 1}, {1, 0}};
+	return QuantumGate(1, X);
+}
 
-//TODO JB
-QuantumGate Y() {}
+QuantumGate Y() {
+	matrix Y{{0, -I}, {I, 0}};
+	return QuantumGate(1, Y);
+}
 
-//TODO JB
-QuantumGate Z() {}
 
-//TODO JB
-QuantumGate R(int k) {}
+QuantumGate Z() { 
+	matrix Z{{1, 0}, {0, -I}};
+	return QuantumGate(1, Z);
+}
 
-//TODO JB
+
+QuantumGate R(int k) {
+}
+
+
 QuantumGate control(const QuantumGate& gate) {}
 
-//TODO JB
 QuantumGate swap(vector<int>& indices) {}
 
 }
