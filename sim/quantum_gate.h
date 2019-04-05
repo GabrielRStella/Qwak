@@ -49,11 +49,11 @@ public:
   static QuantumGate R(int);
   static QuantumGate control(const QuantumGate&);
   static QuantumGate swap(vector<int>& indices);
+  //TODO: k-controlled gates?
 
   //TODO: overload arithmetic operators?
 };
 
-//TODO: k-controlled gates?
-}
+} //end namespace
 
 #endif //QUANTUM_GATE_H

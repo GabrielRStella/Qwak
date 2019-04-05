@@ -19,13 +19,13 @@ int main() {
   {
     QuantumState qs(2);
     cout << "qs: " << qs << endl;
-    cout << "H(qs[0]): " << qs.applyPartial(H(), {0}) << endl;
+    cout << "H(qs[0]): " << qs.applyPartial(QuantumGate::H, {0}) << endl;
   }
 
   {
     QuantumState qs;
     cout << "qs: " << qs << endl;
-    cout << "H(qs): " << qs.applyFull(H()) << endl;
+    cout << "H(qs): " << qs.applyFull(QuantumGate::H) << endl;
   }
 
   {
@@ -34,7 +34,7 @@ int main() {
     QuantumGate HH(2, tensor_product(mH, mH));
     cout << "qs: " << qs << endl;
     cout << "HH(qs): " << qs.applyFull(HH) << endl;
-    cout << "H(qs[0]): " << qs.applyPartial(H(), {0}) << endl;
+    cout << "H(qs[0]): " << qs.applyPartial(QuantumGate::H, {0}) << endl;
   }
 
   {

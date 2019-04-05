@@ -62,6 +62,7 @@ const QuantumGate QuantumGate::H(1, H_mat.mul_scalar(ex(1)/sqrt(ex(2))));
 const QuantumGate QuantumGate::X(1, X_mat);
 const QuantumGate QuantumGate::Y(1, Y_mat);
 const QuantumGate QuantumGate::Z(1, Z_mat);
+
 QuantumGate QuantumGate::R(int k) {
   matrix R_k = {{1,0},{0,pow(Euler,(2*Pi*GiNaC::I/(pow(2,k))))}};
   return QuantumGate(1, R_k);
@@ -79,4 +80,4 @@ QuantumGate QuantumGate::control(const QuantumGate& gate) {
 
 QuantumGate swap(vector<int>& indices) {}
 
-}
+} //end namespace
