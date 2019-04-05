@@ -41,26 +41,17 @@ public:
   QuantumGate conjugate() const;
   void conjugate_();
 
+  static const QuantumGate I;
+  static const QuantumGate H;
+  static const QuantumGate X;
+  static const QuantumGate Y;
+  static const QuantumGate Z;
+  static QuantumGate R(int);
+  static QuantumGate control(const QuantumGate&);
+  static QuantumGate swap(vector<int>& indices);
+
   //TODO: overload arithmetic operators?
 };
-
-//basic operators
-
-//identity
-QuantumGate I();
-//hadamard
-QuantumGate H();
-//pauli operators
-QuantumGate X();
-QuantumGate Y();
-QuantumGate Z();
-
-//phase rotation gate
-QuantumGate R(int k);
-//inserts a control qubit at position 0 (i.e. control <tensor> gate)
-QuantumGate control(const QuantumGate& gate);
-//constructs an n-qubit swap gate, swapping {1, 2, ..., n} to the positions in the given vector
-QuantumGate swap(vector<int>& indices);
 
 //TODO: k-controlled gates?
 }
