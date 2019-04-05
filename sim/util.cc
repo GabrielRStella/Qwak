@@ -1,5 +1,7 @@
 #include "util.h"
 
+#include <random>
+
 namespace Qwality {
 
 matrix conjugate_transpose(const matrix& m) {
@@ -42,8 +44,6 @@ matrix tensor_product(const matrix& m1, const matrix& m2) {
 
   return result;
 }
-
-#include <random>
 
 double get_random_number(double min, double max) {
   static std::uniform_real_distribution<double> distr; // [0, 1)

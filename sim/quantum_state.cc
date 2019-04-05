@@ -4,6 +4,7 @@
 
 namespace Qwality {
 
+using std::runtime_error;
 using namespace GiNaC;
 
 int QuantumState::maskQubitOn(int qubit) {

@@ -13,8 +13,6 @@ namespace Qwality {
 using GiNaC::ex;
 using GiNaC::matrix;
 
-using std::runtime_error;
-
 //TODO: convert all functions and data to use this type, where applicable
 //also: is there a better name than index_t?
 typedef unsigned index_t;
@@ -38,6 +36,6 @@ std::ostream& print_ket(int state, int n, std::ostream& o);
 
 } //end namespace
 
-#define QWALITY_NOT_SUPPORTED throw runtime_error("Operation not (yet) supported.");
+#define QWALITY_NOT_SUPPORTED throw std::runtime_error("Operation not (yet) supported.");
 
 #endif //QUANTUM_UTIL_H
