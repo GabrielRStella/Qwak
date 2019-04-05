@@ -79,22 +79,22 @@ QuantumGate QuantumGate::control(const QuantumGate& gate) {
 }
 
 QuantumGate QuantumGate::swap(vector<int>& indices) {
-	QuantumGate result(pow(2,indices.length()));
+	QuantumGate result(1 << indices.size());
 
-	for(int i = 0; i < pow(2,indices.length()); ++i) {
+	for(int i = 0; i < (1<<indices.size()); ++i) {
 		// We want to develop a matrix of the form |j><i|where
 		// every i is a bit strings and each corresponding j
 		// is the same bitstring with the bits swapped as
 		// specified in indices.
 		int j = i;
-		for(int k = 0; k < indices.length(); ++k) {
+		for(int k = 0; k < indices.size(); ++k) {
 			unsigned int bit1 = (j >> k) & 1U;
 			unsigned int bit2 = (j >> indices[k]) & 1U;
 			unsigned int Xor = (bit1 ^ bit2);
 			Xor = (Xor << k) | (Xor << indices[k]);
 			j ^= Xor;
 		}
-		result(j,i) = 1;
+		result.values(j,i) = 1;
 	}
 
 	return result;
