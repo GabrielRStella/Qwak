@@ -85,11 +85,13 @@ public:
   void addRule(TokenRule* tokenRule);
 
   //check if there is another token to extract
+  //i.e., if the next *dereference will succeed
   operator bool();
 
   //access tokens, move stream forward
   Token operator*();
-  TokenStream& operator++();
+  TokenStream& operator++(); //prefix
+  TokenStream& operator++(int); //postfix
 
   //used for saving the position of the stream (in case a GrammarRule fails)
   int getPos();
@@ -107,10 +109,10 @@ public:
   vector<TokenTree>& getChildren();
 
   //add child, return a reference to the stored copy
-  TokenTree& addChild(TokenTree t);
+  TokenTree& addChild(const TokenTree& t);
 };
 
-//because GrammarRule is overridable, they must always be dealt with as pointers
+//because GrammarRule is overridable, they must always be dealt with as pointers or references
 //otherwise virtual functions will not be applied correctly
 //(same for TokenRule)
 class GrammarRule {
@@ -173,8 +175,8 @@ public:
 
 //operators for composing grammar rules (and, or)
 
-GrammarRule* operator&(GrammarRule* left, GrammarRule* right);
+Qwak::GrammarRule* operator&(Qwak::GrammarRule& left, Qwak::GrammarRule& right);
 
-GrammarRule* operator|(GrammarRule* left, GrammarRule* right);
+Qwak::GrammarRule* operator|(Qwak::GrammarRule& left, Qwak::GrammarRule& right);
 
 #endif //PARSE_H
