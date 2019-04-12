@@ -139,15 +139,15 @@ bool GrammarRuleOr::apply(TokenStream& stream, TokenTree& parent) {
 
 //0 or more
 //TODO GS
-GrammarRuleMulti::some(GrammarRule* base) {
+GrammarRuleMulti* GrammarRuleMulti::some(GrammarRule* base) {
 }
 //1 or more
 //TODO GS
-GrammarRuleMulti::many(GrammarRule* base) {
+GrammarRuleMulti* GrammarRuleMulti::many(GrammarRule* base) {
 }
 //0 or 1
 //TODO GS
-GrammarRuleMulti::maybe(GrammarRule* base) {
+GrammarRuleMulti* GrammarRuleMulti::maybe(GrammarRule* base) {
 }
 
 GrammarRuleMulti::GrammarRuleMulti(GrammarRule* base_, int min_, int max_) : base(base_), min(min_), max(max_) {}

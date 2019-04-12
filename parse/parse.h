@@ -190,11 +190,11 @@ public:
 class GrammarRuleMulti : public GrammarRule {
 public:
   //0 or more
-  some(GrammarRule* base);
+  static GrammarRuleMulti* some(GrammarRule* base);
   //1 or more
-  many(GrammarRule* base);
+  static GrammarRuleMulti* many(GrammarRule* base);
   //0 or 1
-  maybe(GrammarRule* base);
+  static GrammarRuleMulti* maybe(GrammarRule* base);
 
 private:
   GrammarRule* base;
