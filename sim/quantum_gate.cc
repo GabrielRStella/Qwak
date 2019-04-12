@@ -55,7 +55,7 @@ void QuantumGate::conjugate_() {
 matrix H_mat = {{1,1},{1,-1}};
 matrix X_mat = {{0,1},{1,0}};
 matrix Y_mat = {{0,-I},{I,0}};
-matrix Z_mat = {{1,0},{0,-I}};
+matrix Z_mat = {{1,0},{0,-1}};
 
 const QuantumGate QuantumGate::I(1);
 const QuantumGate QuantumGate::H(1, H_mat.mul_scalar(ex(1)/sqrt(ex(2))));
@@ -70,47 +70,54 @@ QuantumGate QuantumGate::R(int k) {
 
 QuantumGate QuantumGate::control(const QuantumGate& gate) {
     QuantumGate result(gate.n + 1);
-    for(int i = 0; i < gate.n; ++i) {
-        for(int j = 0; j < gate.n; ++j) {
-            result.values(j + gate.n, i + gate.n) = gate.values(j,i);
+    for(int i = 0; i < gate.dim; ++i) {
+        for(int j = 0; j < gate.dim; ++j) {
+            result.values(j + gate.dim, i + gate.dim) = gate.values(j,i);
         }
     }
     return result;
 }
 
 QuantumGate QuantumGate::swap(vector<int>& indices) {
-    QuantumGate result(1 << indices.size());
+    int n = indices.size();
+    matrix mat(1<<n,1<<n);
 
     for(int i = 0; i < (1<<indices.size()); ++i) {
         // We want to develop a matrix of the form |j><i|where
         // every i is a bit strings and each corresponding j
         // is the same bitstring with the bits swapped as
         // specified in indices.
-        int j = i;
-        for(int k = 0; k < indices.size(); ++k) {
-            unsigned int bit1 = (j >> k) & 1U;
-            unsigned int bit2 = (j >> indices[k]) & 1U;
-            unsigned int Xor = (bit1 ^ bit2);
-            Xor = (Xor << k) | (Xor << indices[k]);
-            j ^= Xor;
+        int j = 0;
+        for(int k = 0; k < n; ++k) {
+            j |= ((i >> indices[k]) & 1) << k;
         }
-        result.values(j,i) = 1;
+        mat(j,i) = 1;
     }
+
+    QuantumGate result(n, mat);
 
     return result;
 }
 
+} //end namespace
+
 std::ostream& operator<<(std::ostream& o, const Qwality::QuantumGate& qg) {
     bool printed = false;
-    for(int i = 0; i < pow(2,qg.n); ++i) {
-        for(int j = 0; j < pow(2,qg.n); ++j {
+    for(int i = 0; i < qg.dim; ++i) {
+        for(int j = 0; j < qg.dim; ++j) {
 
-            const GiNaC::ex& amp = qs.amplitudes(state, 0);
-            if(!amp.is_zero()) {
-                if(printed) o << "+";
-
-                if(!amp.is_equal(GiNaC::ex(1))) o << amp;
-                Qwality::print_ket(state, qs.n, o);
+            const GiNaC::ex& val = qg.values(i, j);
+            if(!val.is_zero()) {
+                if(!val.compare(1)) {
+                    if(printed) o << "+";
+                } else if(!val.compare(-1)) {
+                    o << "-";
+                } else {
+                    if(printed) o << "+";
+                    o << "(" << val << ")";
+                }
+                Qwality::print_ket(i, qg.n, o);
+                Qwality::print_bra(j, qg.n, o);
                 printed = true;
             }
         }
@@ -118,4 +125,4 @@ std::ostream& operator<<(std::ostream& o, const Qwality::QuantumGate& qg) {
     return o;
 }
 
-} //end namespace
+

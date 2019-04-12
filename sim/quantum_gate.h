@@ -6,6 +6,12 @@
 #include "util.h"
 
 namespace Qwality {
+    class QuantumGate;
+}
+
+std::ostream& operator<<(std::ostream& o, const Qwality::QuantumGate& qg);
+
+namespace Qwality {
 
 using std::vector;
 
@@ -13,8 +19,6 @@ using GiNaC::ex;
 using GiNaC::matrix;
 
 //TODO: define API for creating and manipulating quantum logic gates
-
-std::ostream& operator<<(std::ostream& o, const QuantumGate& qg);
 
 class QuantumGate {
 private:

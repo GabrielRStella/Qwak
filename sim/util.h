@@ -33,6 +33,7 @@ std::ostream& print_binary(int state, int n, std::ostream& o);
 int flip_bit_order(int bits, int n);
 
 std::ostream& print_ket(int state, int n, std::ostream& o);
+std::ostream& print_bra(int state, int n, std::ostream& o);
 
 } //end namespace
 

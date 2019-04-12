@@ -21,6 +21,9 @@ test: tests
 tests: tests.o quantum_simulator.a
 	$(CXX) $^ $(LDFLAGS) -o $@
 
+gate_tests: quantum_gate_test.o quantum_simulator.a
+	$(CXX) $^ $(LDFLAGS) -o $@
+
 #Generates a static library
 #https://stackoverflow.com/a/32168987
 #Consider using a .so (runtime library)?

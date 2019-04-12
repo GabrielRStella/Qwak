@@ -75,4 +75,11 @@ std::ostream& print_ket(int state, int n, std::ostream& o) {
   return o;
 }
 
+std::ostream& print_bra(int state, int n, std::ostream& o) {
+  o << "<";
+  print_binary(flip_bit_order(state, n), n, o);
+  o << "|";
+  return o;
+}
+
 }
