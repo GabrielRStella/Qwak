@@ -186,6 +186,27 @@ public:
   virtual bool apply(TokenStream& stream, TokenTree& parent) override;
 };
 
+//multi grammar rules, e.g. "<ident>*", "<ident>?", or "<ident>+"
+class GrammarRuleMulti : public GrammarRule {
+public:
+  //0 or more
+  some(GrammarRule* base);
+  //1 or more
+  many(GrammarRule* base);
+  //0 or 1
+  maybe(GrammarRule* base);
+
+private:
+  GrammarRule* base;
+  int min;
+  int max;
+
+public:
+  GrammarRuleMulti(GrammarRule* base, int min, int max);
+
+  virtual bool apply(TokenStream& stream, TokenTree& parent) override;
+};
+
 } //end namespace
 
 //operators for composing grammar rules (and, or)
