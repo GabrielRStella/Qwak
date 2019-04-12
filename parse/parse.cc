@@ -18,11 +18,23 @@ bool TokenRule::keepToken() {
   return keepToken_;
 }
 
+TokenRuleRegex::TokenRuleRegex(bool keepToken__, regex pattern_) : TokenRule(keepToken__), pattern(pattern_) {}
+
+//TODO
+int TokenRuleRegex::apply(const string& buffer, int begin, Token* fill) {
+}
+
+TokenRuleExact::TokenRuleExact(bool keepToken__, string match_) : TokenRule(keepToken__), match(match_) {}
+
+//TODO
+int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
+}
+
 TokenStream::TokenStream(string buffer_) : buffer(buffer_), curPos(0) {
 }
 
-//TODO GS
 void TokenStream::addRule(TokenRule* rule) {
+  rules.push_back(rule);
 }
 
 //TODO GS
@@ -35,6 +47,7 @@ Token TokenStream::operator*() {
 
 //TODO GS
 TokenStream& TokenStream::operator++() { //prefix
+  
 }
 
 //TODO GS

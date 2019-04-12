@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <initializer_list>
+#include <regex>
 
 //note: none of the stuff in this file is specific to Qwak.
 //it is just a general language definition/parsing toolkit.
@@ -17,6 +18,7 @@ using std::stack;
 using std::string;
 using std::vector;
 using std::initializer_list;
+using std::regex;
 
 //token types:
 //ones for logistical reasons
@@ -59,12 +61,22 @@ public:
   bool keepToken();
 };
 
-//TODO: define this class
 class TokenRuleRegex : public TokenRule {
 private:
+  regex pattern;
 
 public:
-  TokenRuleRegex(bool keepToken__);
+  TokenRuleRegex(bool keepToken__, regex pattern);
+
+  virtual int apply(const string& buffer, int begin, Token* fill) override;
+};
+
+class TokenRuleExact : public TokenRule {
+private:
+  string match;
+
+public:
+  TokenRuleExact(bool keepToken__, string match);
 
   virtual int apply(const string& buffer, int begin, Token* fill) override;
 };
@@ -76,7 +88,7 @@ private:
 
   int curPos;
 
-  //TODO: other stuff?
+  vector<TokenRule*> rules;
 
 public:
   TokenStream(string buffer);
