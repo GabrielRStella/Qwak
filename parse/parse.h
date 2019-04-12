@@ -210,6 +210,7 @@ public:
 } //end namespace
 
 //operators for composing grammar rules (and, or)
+//TODO: operator for GrammarRuleMulti?
 
 Qwak::GrammarRule* operator&(Qwak::GrammarRule& left, Qwak::GrammarRule& right);
 
