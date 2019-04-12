@@ -12,21 +12,32 @@ const string& Token::getValue() {
   return value;
 }
 
-TokenRule::TokenRule(bool keepToken__) : keepToken_(keepToken__) {}
+TokenRule::TokenRule(bool keepToken__, int tokenType_) : keepToken_(keepToken__), tokenType(tokenType_) {}
 
 bool TokenRule::keepToken() {
   return keepToken_;
 }
 
-TokenRuleRegex::TokenRuleRegex(bool keepToken__, regex pattern_) : TokenRule(keepToken__), pattern(pattern_) {}
+TokenRuleRegex::TokenRuleRegex(bool keepToken__, int tokenType_, regex pattern_) : TokenRule(keepToken__, tokenType_), pattern(pattern_) {}
 
-//TODO
+//TODO JB
 int TokenRuleRegex::apply(const string& buffer, int begin, Token* fill) {
+  /*
+    calling convention: (applies to TokenRuleExact also)
+    "begin" tells you where to start looking for a match in the given buffer
+    if the match is successful, "fill" should be assigned to a token with the matched text,
+    and the return value is the position after the end of this token
+    (i.e. where the next token will begin)
+    if unsuccessful, "fill" will be ignored, and return == begin.
+  */
+
+  //example
+  *fill = Token(tokenType, "test");
 }
 
-TokenRuleExact::TokenRuleExact(bool keepToken__, string match_) : TokenRule(keepToken__), match(match_) {}
+TokenRuleExact::TokenRuleExact(bool keepToken__, int tokenType_, string match_) : TokenRule(keepToken__, tokenType_), match(match_) {}
 
-//TODO
+//TODO JB
 int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
 }
 

@@ -48,8 +48,11 @@ class TokenRule {
 private:
   bool keepToken_; //return this value in keepToken
 
+protected:
+  int tokenType;
+
 public:
-  TokenRule(bool keepToken__);
+  TokenRule(bool keepToken__, int tokenType);
 
   //if return != begin, the rule is considered to have worked
   //return = the point to begin parsing the next token
@@ -66,7 +69,7 @@ private:
   regex pattern;
 
 public:
-  TokenRuleRegex(bool keepToken__, regex pattern);
+  TokenRuleRegex(bool keepToken__, int tokenType, regex pattern);
 
   virtual int apply(const string& buffer, int begin, Token* fill) override;
 };
@@ -76,7 +79,7 @@ private:
   string match;
 
 public:
-  TokenRuleExact(bool keepToken__, string match);
+  TokenRuleExact(bool keepToken__, int tokenType, string match);
 
   virtual int apply(const string& buffer, int begin, Token* fill) override;
 };
