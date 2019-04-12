@@ -9,6 +9,8 @@
 //note: none of the stuff in this file is specific to Qwak.
 //it is just a general language definition/parsing toolkit.
 
+//TODO: define the TokenRuleRegex class
+
 namespace Qwak {
 
 using std::stack;
@@ -39,12 +41,39 @@ public:
   const string& getValue();
 };
 
+//rule used to parse tokens
+class TokenRule {
+private:
+  bool keepToken_; //return this value in keepToken
+
+public:
+  TokenRule(bool keepToken__);
+
+  //if return != begin, the rule is considered to have worked
+  //return = the point to begin parsing the next token
+  virtual int apply(const string& buffer, int begin, Token* fill) = 0;
+
+  //if the token should be kept; for example,
+  //a token rule could be defined that accepts all whitespace
+  //and returns false here.
+  bool keepToken();
+};
+
+//TODO: define this class
+class TokenRuleRegex : public TokenRule {
+private:
+
+public:
+  TokenRuleRegex(bool keepToken__);
+
+  virtual int apply(const string& buffer, int begin, Token* fill) override;
+};
+
 //extracts tokens from a buffer (i.e. a string)
 class TokenStream {
 private:
   string buffer;
 
-  stack positions;
   int curPos;
 
   //TODO: other stuff?
@@ -65,24 +94,6 @@ public:
   //used for saving the position of the stream (in case a GrammarRule fails)
   int getPos();
   void setPos(int pos);
-};
-
-//rule used to parse tokens
-class TokenRule {
-private:
-  bool keepToken_; //return this value in keepToken
-
-public:
-  TokenRule(bool keepToken);
-
-  //if return != begin, the rule is considered to have worked
-  //return = the point to begin parsing the next token
-  virtual int apply(string buffer, int begin, Token* fill);
-
-  //if the token should be kept; for example,
-  //a token rule could be defined that accepts all whitespace
-  //and returns false here.
-  bool keepToken();
 };
 
 class TokenTree {
