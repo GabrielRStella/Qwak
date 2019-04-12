@@ -14,6 +14,8 @@ using GiNaC::matrix;
 
 //TODO: define API for creating and manipulating quantum logic gates
 
+std::ostream& operator<<(std::ostream& o, const QuantumGate& qg);
+
 class QuantumGate {
 private:
   int n;
@@ -49,6 +51,9 @@ public:
   static QuantumGate R(int);
   static QuantumGate control(const QuantumGate&);
   static QuantumGate swap(vector<int>& indices);
+  
+  friend std::ostream& ::operator<<(std::ostream& o, const QuantumGate& qg);
+
   //TODO: k-controlled gates?
 
   //TODO: overload arithmetic operators?
