@@ -41,28 +41,57 @@ TokenRuleExact::TokenRuleExact(bool keepToken__, int tokenType_, string match_) 
 int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
 }
 
-TokenStream::TokenStream(string buffer_) : buffer(buffer_), curPos(0) {
+TokenStream::TokenStream(string buffer_) : buffer(buffer_), curPos(0), hasTokenized(false) {
 }
 
 void TokenStream::addRule(TokenRule* rule) {
   rules.push_back(rule);
+  hasTokenized = false;
 }
 
-//TODO GS
+void TokenStream::tokenize() {
+  tokens.clear();
+
+  //tokenize here
+  int pos = 0;
+  Token tmp;
+  while(pos < buffer.size()) {
+    int newPos = pos;
+    for(auto rule : rules) {
+      newPos = rule->apply(buffer, pos, &tmp);
+      if(newPos != pos) {
+        tokens.push_back(tmp);
+        break;
+      }
+    }
+    if(newPos == pos) {
+      //was unable to match any token
+      throw TokenizerError("Unable to tokenize input", pos);
+    }
+  }
+
+  hasTokenized = true;
+  curPos = 0;
+}
+
 TokenStream::operator bool() {
+  if(!hasTokenized) {
+    tokenize();
+  }
+  return curPos < tokens.size();
 }
 
-//TODO GS
 Token TokenStream::operator*() {
+  return tokens[curPos];
 }
 
-//TODO GS
 TokenStream& TokenStream::operator++() { //prefix
-  
+  curPos++;
+  return *this;
 }
 
-//TODO GS
-TokenStream& TokenStream::operator++(int) { //postfix
+void TokenStream::operator++(int) { //postfix
+  curPos++;
 }
 
 int TokenStream::getPos() {
@@ -90,6 +119,7 @@ bool GrammarRuleTokenType::apply(TokenStream& stream, TokenTree& parent) {
   if(!stream) return false;
   Token t = *stream;
   if(t.getType() == tokenType) {
+    parent.addChild(TokenTree(t));
     stream++;
     return true;
   } else {
@@ -103,6 +133,7 @@ bool GrammarRuleTokenValue::apply(TokenStream& stream, TokenTree& parent) {
   if(!stream) return false;
   Token t = *stream;
   if(t.getValue() == tokenValue) {
+    parent.addChild(TokenTree(t));
     stream++;
     return true;
   } else {
@@ -116,12 +147,14 @@ GrammarRuleAnd::GrammarRuleAnd(initializer_list<GrammarRule*> rules_) : GrammarR
 
 bool GrammarRuleAnd::apply(TokenStream& stream, TokenTree& parent) {
   int pos = stream.getPos();
+  TokenTree child;
   for(auto rule : rules) {
-    if(!rule->apply(stream, parent)) {
+    if(!rule->apply(stream, child)) {
       stream.setPos(pos);
       return false;
     }
   }
+  parent.addChild(child);
   return true;
 }
 
@@ -132,28 +165,56 @@ bool GrammarRuleOr::apply(TokenStream& stream, TokenTree& parent) {
   for(auto rule : rules) {
     stream.setPos(pos);
     //if false, the rule must implicitly reset the stream position
-    if(rule->apply(stream, parent)) return true;
+    if(rule->apply(stream, parent)) {
+      return true;
+    }
   }
   return false;
 }
 
 //0 or more
-//TODO GS
 GrammarRuleMulti* GrammarRuleMulti::some(GrammarRule* base) {
+  return new GrammarRuleMulti(base, 0, -1);
 }
+
 //1 or more
-//TODO GS
 GrammarRuleMulti* GrammarRuleMulti::many(GrammarRule* base) {
+  return new GrammarRuleMulti(base, 1, -1);
 }
+
 //0 or 1
-//TODO GS
 GrammarRuleMulti* GrammarRuleMulti::maybe(GrammarRule* base) {
+  return new GrammarRuleMulti(base, 0, 1);
 }
 
 GrammarRuleMulti::GrammarRuleMulti(GrammarRule* base_, int min_, int max_) : base(base_), min(min_), max(max_) {}
 
-//TODO GS
 bool GrammarRuleMulti::apply(TokenStream& stream, TokenTree& parent) {
+  TokenTree child;
+  int count = 0;
+  while(max < 0 || count < max) {
+    if(base->apply(stream, child)) {
+      count++;
+    } else {
+      break;
+    }
+  }
+  if(count >= min) {
+    parent.addChild(child);
+    return true;
+  } else {
+    return false;
+  }
+}
+
+//error types
+
+QwakError::QwakError(const string& what) : std::runtime_error(what) {}
+
+TokenizerError::TokenizerError(const string& what, int pos_) : QwakError(what), pos(pos_) {}
+
+int TokenizerError::getPos() {
+  return pos;
 }
 
 } //end namespace
