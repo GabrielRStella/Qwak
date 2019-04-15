@@ -6,11 +6,15 @@
 #include <vector>
 #include <initializer_list>
 #include <regex>
+#include <stdexcept>
 
 //note: none of the stuff in this file is specific to Qwak.
 //it is just a general language definition/parsing toolkit.
 
-//TODO: define the TokenRuleRegex class
+/*
+TODO:
+-error handling (be able to return failure points to user)
+*/
 
 namespace Qwak {
 
@@ -42,6 +46,8 @@ public:
   int getType();
   const string& getValue();
 };
+
+const Token EMPTY_TOKEN;
 
 //rule used to parse tokens
 class TokenRule {
@@ -93,6 +99,11 @@ private:
 
   vector<TokenRule*> rules;
 
+  bool hasTokenized;
+  vector<Token> tokens;
+
+  void tokenize();
+
 public:
   TokenStream(string buffer);
 
@@ -106,7 +117,7 @@ public:
   //access tokens, move stream forward
   Token operator*();
   TokenStream& operator++(); //prefix
-  TokenStream& operator++(int); //postfix
+  void operator++(int); //postfix
 
   //used for saving the position of the stream (in case a GrammarRule fails)
   int getPos();
@@ -119,7 +130,7 @@ private:
   vector<TokenTree> children;
 
 public:
-  TokenTree(Token current);
+  TokenTree(Token current = EMPTY_TOKEN);
 
   vector<TokenTree>& getChildren();
 
@@ -171,6 +182,7 @@ public:
 };
 
 //"and" rules, e.g. "<ident> AND '+' AND <ident>"
+//will insert a fake node between parent and children... seems unavoidable, unfortunately
 class GrammarRuleAnd : public GrammarRuleCompound {
 public:
   GrammarRuleAnd(initializer_list<GrammarRule*> rules);
@@ -205,6 +217,22 @@ public:
   GrammarRuleMulti(GrammarRule* base, int min, int max);
 
   virtual bool apply(TokenStream& stream, TokenTree& parent) override;
+};
+
+//error types
+
+class QwakError : public std::runtime_error {
+public:
+  QwakError(const string& what);
+};
+
+class TokenizerError : public QwakError {
+  int pos;
+public:
+  TokenizerError(const string& what, int pos);
+
+  //the offset where the error occurred (right after the last successfully-parsed token)
+  int getPos();
 };
 
 } //end namespace
