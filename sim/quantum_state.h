@@ -54,8 +54,11 @@ public:
   ex getProbabilityOfQubit(int qubit) const;
   double getProbabilityDoubleOfQubit(int qubit) const;
 
-  void getProbabilities(vector<double>& receiver) const;
-  vector<double> getProbabilities() const;
+  void getProbabilities(vector<ex>& receiver) const;
+  vector<ex> getProbabilities() const;
+
+  void getProbabilityDoubles(vector<double>& receiver) const;
+  vector<double> getProbabilityDoubles() const;
 
   int sample() const; //randomly samples the entire state and produces a measurement
   QuantumState measure() const;

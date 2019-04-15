@@ -48,6 +48,13 @@ matrix tensor_product(const matrix& m1, const matrix& m2) {
 double get_random_number(double min, double max) {
   static std::uniform_real_distribution<double> distr; // [0, 1)
   static std::mt19937_64 mt;
+  static bool mt_set = false;
+  if(!mt_set) {
+    //TODO: more fine-grained seed setting?
+    mt.seed(std::time(nullptr));
+    mt_set = true;
+  }
+
   double val = distr(mt);
   return val * (max - min) + min;
 }

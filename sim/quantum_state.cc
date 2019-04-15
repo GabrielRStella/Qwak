@@ -76,15 +76,27 @@ double QuantumState::getProbabilityDoubleOfQubit(int qubit) const {
   throw runtime_error("Invalid expression found while calculating probability.");
 }
 
-void QuantumState::getProbabilities(vector<double>& receiver) const {
+void QuantumState::getProbabilities(vector<ex>& receiver) const {
+  for(int state = 0; state < dim; state++) {
+    receiver.push_back(getProbabilityOfState(state));
+  }
+}
+
+vector<ex> QuantumState::getProbabilities() const {
+  vector<ex> ret;
+  getProbabilities(ret);
+  return ret;
+}
+
+void QuantumState::getProbabilityDoubles(vector<double>& receiver) const {
   for(int state = 0; state < dim; state++) {
     receiver.push_back(getProbabilityDoubleOfState(state));
   }
 }
 
-vector<double> QuantumState::getProbabilities() const {
+vector<double> QuantumState::getProbabilityDoubles() const {
   vector<double> ret;
-  getProbabilities(ret);
+  getProbabilityDoubles(ret);
   return ret;
 }
 
@@ -120,7 +132,7 @@ QuantumState QuantumState::measure(int qubit) const {
   bool measurement = sample(qubit);
   int mask = QuantumState::maskQubitOn(qubit);
 
-  vector<double> probabilities;
+  vector<ex> probabilities;
   getProbabilities(probabilities);
 
   //count states and probabilities

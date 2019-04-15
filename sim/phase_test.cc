@@ -22,11 +22,16 @@ int main() {
         mat(i,0) = pow(Euler,2*Pi*I*omega*ex(i));
     }
 
-    QuantumState psi(n,mat);
+    //QuantumState psi(n,mat);
+
+    QuantumState psi(n);
     
     cout << "|psi_0>: " << psi << endl;
 
     psi.applyPartial_(QuantumGate::H, vector<int>{1});
+    
+    cout << "|psi_0.5>: " << psi << endl;
+
     psi.measure_(1);
 
     cout << "|psi_1>: " << psi << endl;
