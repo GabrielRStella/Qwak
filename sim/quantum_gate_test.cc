@@ -15,7 +15,7 @@ int main() {
     cout << QuantumGate::Y << endl;
     cout << QuantumGate::Z << endl;
     cout << QuantumGate::H << endl;
-    cout << QuantumGate::R(2) << endl;
+    cout << (QuantumGate::R(2)).inverse() << endl;
     cout << QuantumGate::control(QuantumGate::H) << endl;
     cout << QuantumGate::swap(swap_i) << endl;
 

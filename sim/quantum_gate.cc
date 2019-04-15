@@ -44,6 +44,14 @@ void QuantumGate::andThen_(const QuantumGate& next) {
     values = next.values.mul(values);
 }
 
+QuantumGate QuantumGate::inverse() const {
+    return QuantumGate(n,values.inverse());
+}
+
+void QuantumGate::inverse_() {
+    values = values.inverse();
+}
+
 QuantumGate QuantumGate::conjugate() const {
     return QuantumGate(n, conjugate_transpose(values));
 }

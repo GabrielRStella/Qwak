@@ -36,14 +36,13 @@ private:
   //column vector of quantum state
   matrix amplitudes;
 
-  QuantumState(int n_qubits, matrix m);
-
 public:
   //TODO:
   //accessors and modifiers
 
   QuantumState(int n_qubits = 1, int state = 0); //initializes to |state>
   QuantumState(const QuantumState& cp);
+  QuantumState(int n_qubits, matrix m);
 
   QuantumState& operator=(const QuantumState& cp);
 

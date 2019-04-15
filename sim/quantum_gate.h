@@ -44,6 +44,11 @@ public:
   QuantumGate andThen(const QuantumGate& next) const;
   void andThen_(const QuantumGate& next);
 
+  //inverse of gate
+  QuantumGate inverse() const;
+  void inverse_();
+
+  //complex conjugate of gate
   QuantumGate conjugate() const;
   void conjugate_();
 

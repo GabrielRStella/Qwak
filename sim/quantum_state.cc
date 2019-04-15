@@ -48,6 +48,7 @@ ex QuantumState::getProbabilityOfState(int state) const {
 
 double QuantumState::getProbabilityDoubleOfState(int state) const {
   auto p = getProbabilityOfState(state);
+  p = p.evalf();
   if(is_a<numeric>(p)) {
     return ex_to<numeric>(p).to_double();
   }
@@ -68,6 +69,7 @@ ex QuantumState::getProbabilityOfQubit(int qubit) const {
 
 double QuantumState::getProbabilityDoubleOfQubit(int qubit) const {
   auto p = getProbabilityOfQubit(qubit);
+  p = p.evalf();
   if(is_a<numeric>(p)) {
     return ex_to<numeric>(p).to_double();
   }
