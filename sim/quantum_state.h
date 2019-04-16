@@ -66,8 +66,13 @@ public:
 
   bool sample(int qubit) const; //randomly samples a single qubit and produces a measurement
   //will collapse one qubit and return entire new state
-  QuantumState measure(int qubit) const;
-  void measure_(int qubit);
+  QuantumState measure(int qubit, bool* choice = nullptr) const;
+  void measure_(int qubit, bool* choice = nullptr);
+
+  //will collapse several qubit and return entire new state
+  //the "choice" is returned in terms of the order given in the qubits vector
+  QuantumState measure(const vector<int>& qubits, int* choice = nullptr) const;
+  void measure_(const vector<int>& qubits, int* choice = nullptr);
 
   //resets state to |0^n>
   void reset();
@@ -83,7 +88,7 @@ public:
   vector<QuantumState> untensor() const;
 
   /*
-    TODO: apply the gate to a part of this state, and return the modified state
+    apply the gate to a part of this state, and return the modified state
 
     The given vector of qubits determines which parts of this state (and in what order)
     to apply the gate.

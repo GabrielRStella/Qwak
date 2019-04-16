@@ -28,12 +28,12 @@ using std::regex;
 //ones for logistical reasons
 const int TOKEN_TYPE_NON = 0; //placeholder for invalid tokens
 const int TOKEN_TYPE_ROOT = 1; //placeholder for a "root" token
-//some simple predefined ones
-const int TOKEN_TYPE_KEYWORD = 2; //a token that is a keyword
-const int TOKEN_TYPE_OPERATOR = 3; //a token for some sort of operator, e.g. +-*/^
-const int TOKEN_TYPE_LITERAL = 4; //a token that is a literal of some sort (e.g. a number)
-const int TOKEN_TYPE_IDENTIFIER = 5; //identifier, e.g. a variable or function
-//TODO: user (us...) should define other token types (TOKEN_TYPE_OP_PLUS, etc)
+const int TOKEN_TYPE_WHITESPACE = 2;
+//some simple predefined ones (start at 10 to allow more above) (just ideas)
+//const int TOKEN_TYPE_KEYWORD = 10; //a token that is a keyword
+//const int TOKEN_TYPE_OPERATOR = 11; //a token for some sort of operator, e.g. +-*/^
+//const int TOKEN_TYPE_LITERAL = 12; //a token that is a literal of some sort (e.g. a number)
+//const int TOKEN_TYPE_IDENTIFIER = 13; //identifier, e.g. a variable or function
 
 class Token {
 private:
@@ -90,6 +90,13 @@ public:
   virtual int apply(const string& buffer, int begin, Token* fill) override;
 };
 
+class TokenRuleWhitespace : public TokenRule {
+public:
+  TokenRuleWhitespace();
+
+  virtual int apply(const string& buffer, int begin, Token* fill) override;
+};
+
 //extracts tokens from a buffer (i.e. a string)
 class TokenStream {
 private:
@@ -118,6 +125,11 @@ public:
   Token operator*();
   TokenStream& operator++(); //prefix
   void operator++(int); //postfix
+
+  //checks for a single token of the given type
+  //if successful, returns token in pointer (unless t == nullptr)
+  //and also moves forward
+  bool operator()(int tokenType, Token* t);
 
   //used for saving the position of the stream (in case a GrammarRule fails)
   int getPos();

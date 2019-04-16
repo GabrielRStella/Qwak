@@ -129,8 +129,10 @@ bool QuantumState::sample(int qubit) const {
   return (guess < p);
 }
 
-QuantumState QuantumState::measure(int qubit) const {
+QuantumState QuantumState::measure(int qubit, bool* choice) const {
   bool measurement = sample(qubit);
+  if(choice) *choice = measurement;
+
   qubit = n - qubit - 1;
   int mask = QuantumState::maskQubitOn(qubit);
 
@@ -156,8 +158,29 @@ QuantumState QuantumState::measure(int qubit) const {
   return QuantumState(n, amps);
 }
 
-void QuantumState::measure_(int qubit) {
-  amplitudes = measure(qubit).amplitudes; //ez
+void QuantumState::measure_(int qubit, bool* choice) {
+  amplitudes = measure(qubit, choice).amplitudes; //ez
+}
+
+QuantumState QuantumState::measure(const vector<int>& qubits, int* choice = nullptr) const {
+  QuantumState tmp(*this);
+
+  int theChoice = 0;
+
+  int idx = 0;
+  for(int qubit : qubits) {
+    bool thisChoice;
+    tmp.measure_(qubit, &thisChoice);
+    theChoice |= (int(thisChoice) << idx);
+    idx++;
+  }
+
+  *choice = theChoice;
+  return tmp;
+}
+
+void QuantumState::measure_(const vector<int>& qubits, int* choice = nullptr) {
+  amplitudes = measure(qubits, choice).amplitudes; //ez
 }
 
 void QuantumState::reset() {

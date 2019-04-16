@@ -41,6 +41,17 @@ TokenRuleExact::TokenRuleExact(bool keepToken__, int tokenType_, string match_) 
 int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
 }
 
+TokenRuleWhitespace::TokenRuleWhitespace() : TokenRule(false, TOKEN_TYPE_WHITESPACE) {}
+
+int TokenRuleWhitespace::apply(const string& buffer, int begin, Token* fill) {
+  char c = buffer[begin];
+  if(c == ' ' || c == '\t' || c == '\n' || c == '\r') {
+    *fill = Token(tokenType, std::string(1, c));
+    return begin + 1;
+  }
+  return begin;
+}
+
 TokenStream::TokenStream(string buffer_) : buffer(buffer_), curPos(0), hasTokenized(false) {
 }
 
@@ -92,6 +103,16 @@ TokenStream& TokenStream::operator++() { //prefix
 
 void TokenStream::operator++(int) { //postfix
   curPos++;
+}
+
+bool TokenStream::operator()(int tokenType, Token* t) {
+  Token& tmp = tokens[curPos];
+  if(tmp.getType() == tokenType) {
+    if(t) *t = tmp;
+    curPos++;
+    return true;
+  }
+  return false;
 }
 
 int TokenStream::getPos() {

@@ -3,6 +3,8 @@
 
 #include "parse.h"
 
+#include "env.h"
+
 #include <string>
 #include <vector>
 #include <unordered_map>
@@ -13,54 +15,34 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 
-//a statement of some sort that goes in a function body
-class Statement {
-private:
-
-public:
-  bool parse(TokenStream& tokens);
-  //TODO: API
-};
-
-//the declaration of a function, e.g. "function example(U, x)"
-class FunctionPrototype {
-private:
-
-public:
-  bool parse(TokenStream& tokens);
-  //TODO: API
-  string getName();
-};
-
-//a function and its body
+//an executable function
 class Function {
-private:
-  FunctionPrototype proto;
-  vector<Statement> statements;
 public:
-  bool parse(TokenStream& tokens);
   //TODO: API
-  string getName();
+  virtual const string getName() const = 0;
+  virtual const vector<string>& getArgs() const;
+  virtual Object execute(Environment& e) const = 0;
 };
 
 class Program {
-private:
-  vector<Function> functions;
+protected:
+  vector<Function*> functions;
   unordered_map<string, Function*> functionsByName;
 public:
-  bool parse(TokenStream& tokens);
-  //TODO: API
-  Function& getFunction(string name);
+  void addFunction(Function* f);
+
+  const Function* getFunction(string name) const;
+  const vector<Function*>& getFunctions() const;
 };
 
 class QwakParser {
 private:
-
+  vector<TokenRule*> tokenRules;
 public:
   QwakParser();
 
   //parses string -> Tokens -> AST
-  bool parse(const std::string& buffer, TokenTree& root);
+  Program* parse(const std::string& buffer);
   //parses AST -> program
   //(TODO)
   
