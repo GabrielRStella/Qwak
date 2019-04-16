@@ -129,7 +129,7 @@ public:
   //checks for a single token of the given type
   //if successful, returns token in pointer (unless t == nullptr)
   //and also moves forward
-  bool operator()(int tokenType, Token* t);
+  bool operator()(int tokenType, Token* t = nullptr);
 
   //used for saving the position of the stream (in case a GrammarRule fails)
   int getPos();
@@ -245,6 +245,14 @@ public:
 
   //the offset where the error occurred (right after the last successfully-parsed token)
   int getPos();
+};
+
+class ParserError : public QwakError {
+  int token;
+public:
+  ParserError(const string& what, int token);
+
+  int getToken();
 };
 
 } //end namespace

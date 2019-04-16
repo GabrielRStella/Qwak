@@ -1,5 +1,5 @@
-#ifndef PARSE_H
-#define PARSE_H
+#ifndef ENV_H
+#define ENV_H
 
 #include <string>
 
@@ -25,17 +25,6 @@ public:
   Object& operator[](const std::string& variable);
 };
 
-//TODO: API for parser
-//void parse(string)?
-//Function parse(string)?
-//Object execute(string)?
-class Parser {
-private:
-
-public:
-  //?
-};
-
 } //end namespace
 
-#endif //PARSE_H
+#endif //ENV_H

@@ -238,6 +238,12 @@ int TokenizerError::getPos() {
   return pos;
 }
 
+ParserError::ParserError(const string& what, int token_) : QwakError(what), token(token_) {}
+
+int ParserError::getToken() {
+  return token;
+}
+
 } //end namespace
 
 using namespace Qwak;

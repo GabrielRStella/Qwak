@@ -32,7 +32,8 @@ const int TOKEN_TYPE_TENSOR_EXPONENT = 122; // ^**
 const int TOKEN_TYPE_KEYWORD_FUNCTION = 200;
 const int TOKEN_TYPE_KEYWORD_RETURN = 201;
 //other
-const int TOKEN_TYPE_IDENTIFIER = 300; //identifier, e.g. a variable or function name
+const int TOKEN_TYPE_LITERAL = 300; //literal of some sort: state, number, list, etc
+const int TOKEN_TYPE_IDENTIFIER = 301; //identifier, e.g. a variable or function name
 
 //helpers
 
@@ -46,6 +47,49 @@ void parseSome(TokenStream& tokens, vector<T>& store) {
     pos = tokens.getPos();
   }
   tokens.setPos(pos);
+}
+
+template<typename T>
+void parseSomePtr(TokenStream& tokens, vector<T*>& store) {
+  T* tmp;
+
+  int pos = tokens.getPos();
+  while(true) {
+    tmp = new T();
+    if(!tmp->parse(tokens)) {
+      delete tmp;
+      break;
+    }
+    store.push_back(tmp);
+    pos = tokens.getPos();
+  }
+  tokens.setPos(pos);
+}
+
+void parseSeparated(TokenStream& tokens, int type, int separator, vector<string>& store) {
+  Token tmp;
+
+  int pos = tokens.getPos();
+
+  if(tokens(type, &tmp)) {
+    store.push_back(tmp.getValue());
+    while(true) {
+      pos = tokens.getPos();
+      if(tokens(separator)) {
+        if(tokens(type, &tmp)) {
+          store.push_back(tmp.getValue());
+        } else {
+          throw ParserError("Expected value after comma", tokens.getPos());
+        }
+      } else {
+        tokens.setPos(pos);
+        break;
+      }
+    }
+  } else {
+    //not strictly necessary, but whatever
+    tokens.setPos(pos);
+  }
 }
 
 //semantic elements
@@ -65,6 +109,10 @@ class StatementAST {
 public:
   bool parse(TokenStream& tokens) {
     return false;
+  }
+
+  Object execute(Environment& e) const {
+    
   }
 };
 
@@ -88,7 +136,8 @@ public:
       name = id.getValue();
       //parse args
       if(tokens(TOKEN_TYPE_PARENS_LEFT)) {
-        
+        parseSeparated(tokens, TOKEN_TYPE_IDENTIFIER, TOKEN_TYPE_COMMA, args);
+        if(tokens(TOKEN_TYPE_PARENS_RIGHT)) return true;
       }
     }
 
@@ -99,7 +148,7 @@ public:
 
 class FunctionAST : public Function {
   FunctionPrototypeAST proto;
-
+  vector<StatementAST> statements;
 public:
   const string getName() const override {
     return proto.getName();
@@ -113,11 +162,9 @@ public:
     int pos = tokens.getPos();
 
     if(proto.parse(tokens)) {
-      if((*tokens).getType() == TOKEN_TYPE_BRACE_LEFT) {
-        tokens++;
-        parseSome<Statement>(tokens, statements);
-        if((*tokens).getType() == TOKEN_TYPE_BRACE_RIGHT) {
-          tokens++;
+      if(tokens(TOKEN_TYPE_BRACE_LEFT)) {
+        parseSome<StatementAST>(tokens, statements);
+        if(tokens(TOKEN_TYPE_BRACE_RIGHT)) {
           return true;
         }
       }
@@ -134,8 +181,8 @@ public:
 class ProgramAST : public Program {
 public:
   void parse(TokenStream& tokens) {
-    vector<Function*> tmp;
-    parseSome<Function>(tokens, tmp);
+    vector<FunctionAST*> tmp;
+    parseSomePtr<FunctionAST>(tokens, tmp);
     for(Function* f : tmp) addFunction(f);
   }
 };
@@ -144,14 +191,14 @@ public:
 
 void Program::addFunction(Function* f) {
   //no overriding previous functions
-  if(functionsByName[f.getName()] != nullptr) throw runtime_error("Attempted to override function definition: " + f.getName());
+  if(functionsByName.at(f->getName()) != nullptr) throw QwakError("Attempted to override function definition: " + f->getName());
 
   functions.push_back(f);
-  functionsByName[f.getName()] = f;
+  functionsByName[f->getName()] = f;
 }
 
 const Function* Program::getFunction(string name) const {
-  return functionsByName[name];
+  return functionsByName.at(name);
 }
 
 const vector<Function*>& Program::getFunctions() const {
