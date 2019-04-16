@@ -91,6 +91,19 @@ public:
 };
 
 //TODO: more expression types
+/*
+class ExpressionType : public ExpressionType {
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    //TODO
+    return false;
+  }
+
+  virtual Object execute(Environment& e, Program& p) const override {
+    
+  }
+};
+*/
 
 //may be function call or gate application
 class ExpressionTypeFunctionCallAST : public ExpressionType {
@@ -195,7 +208,7 @@ public:
       tokens.setPos(pos);
     }
     //value part
-    if(expr.parse(tokens) {
+    if(expr.parse(tokens)) {
       return true;
     } else {
       tokens.setPos(pos);
@@ -350,7 +363,7 @@ void Program::addFunction(Function* f) {
   functionsByName[f->getName()] = f;
 }
 
-const Function* Program::getFunction(string name) const {
+Function* Program::getFunction(string name) const {
   return functionsByName.at(name);
 }
 

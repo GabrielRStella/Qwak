@@ -6,7 +6,11 @@
 #include <unordered_map>
 #include <stack>
 
+#include "../sim/quantum_state.h"
+
 namespace Qwak {
+
+using Qwality::QuantumState;
 
 const int DATATYPE_NONE = 0;
 const int DATATYPE_STATE = 1;
