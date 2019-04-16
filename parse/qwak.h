@@ -33,7 +33,7 @@ protected:
 public:
   void addFunction(Function* f);
 
-  const Function* getFunction(string name) const;
+  Function* getFunction(string name) const;
   const vector<Function*>& getFunctions() const;
 };
 
@@ -49,7 +49,7 @@ public:
 
 class ProgramError : public QwakError {
 public:
-  ParserError(const string& what);
+  ProgramError(const string& what);
 };
 
 } //end namespace

@@ -3,6 +3,9 @@
 
 #include <string>
 
+#include <unordered_map>
+#include <stack>
+
 namespace Qwak {
 
 const int DATATYPE_NONE = 0;
@@ -37,11 +40,19 @@ const Object OBJECT_NONE;
 //encapsulates the quantum state and other variables within a function
 class Environment {
 private:
+  QuantumState state;
+
+  //scoped list of variables (Objects)
+  std::stack<std::unordered_map<std::string, Object>> variables;
+  int scopeLevel;
 
 public:
-  //create or modify variable
-  Object operator[](const std::string& variable);
+  Environment();
 
+  //create or modify variable
+  Object& operator[](const std::string& variable);
+
+  //when an Environment gets pushed to a new scope, it keeps the quantum state, but wipes all variables/references
   int getScopeLevel();
   int push(); //returns the scope level before pushing
   int pop(); //returns the scope level after popping, thus push() == pop() from same level

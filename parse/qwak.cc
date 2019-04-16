@@ -21,6 +21,7 @@ const int TOKEN_TYPE_ANGLE_RIGHT = 107; // >
 const int TOKEN_TYPE_COMMA = 110; // , for args or lists
 const int TOKEN_TYPE_DOTS = 111; // .. for ranges
 const int TOKEN_TYPE_PIPE = 112; // |
+const int TOKEN_TYPE_ASSIGN = 113; // =
 //ops
 const int TOKEN_TYPE_PLUS = 120;
 const int TOKEN_TYPE_MINUS = 121;
@@ -82,23 +83,14 @@ void parseSeparated(TokenStream& tokens, int type, int separator, vector<string>
 
 //semantic elements
 
-/*
-//AST template
-class AST {
-public:
-  bool parse(TokenStream& tokens) {
-    return false;
-  }
-};
-*/
-
 //supertype for expressions
 class ExpressionType {
-
 public:
   virtual bool parse(TokenStream& tokens) = 0;
   virtual Object execute(Environment& e, Program& p) const = 0;
 };
+
+//TODO: more expression types
 
 //may be function call or gate application
 class ExpressionTypeFunctionCallAST : public ExpressionType {
@@ -106,15 +98,36 @@ class ExpressionTypeFunctionCallAST : public ExpressionType {
   vector<ExpressionType*> expressions;
 public:
   virtual bool parse(TokenStream& tokens) override {
+    //TODO
     //of form: identifier(expr, expr, ...)[list]
+
+    return false;
   }
 
   virtual Object execute(Environment& e, Program& p) const override {
     Function* f = p.getFunction(name);
     if(f) {
-      int scopeLevel = e.push();
-      Object o = f->execute(e);
-      return o;
+      int len = expressions.size();
+      if(f->getArgs().size() == len) {
+        //evaluate expressions
+        vector<Object> objects(len);
+        for(int i = 0; i < len; i++) {
+          objects[i] = expressions[i]->execute(e, p);
+        }
+        int scopeLevel = e.push();
+        //reassign values into new scope
+        for(int i = 0; i < len; i++) {
+          e[f->getArgs()[i]] = objects[i];
+        }
+        Object o = f->execute(e, p);
+        if(e.pop() == scopeLevel) {
+          return o;
+        } else {
+          throw ProgramError("Scope level mismatch detected");
+        }
+      } else {
+        throw ProgramError("Argument count mismatch in function call");
+      }
     } else {
       Object gate = e[name];
       if(gate) {
@@ -125,7 +138,7 @@ public:
             if(o.getType() == DATATYPE_STATE) {
               //yay!
 
-              //TODO: actual application and return value
+              //TODO: actual application, return value
             } else {
               throw ProgramError("Attempted to apply gate to incorrect type");
             }
@@ -136,42 +149,77 @@ public:
           throw ProgramError("Attempted to call non-callable: " + name);
         }
       } else {
-        return OBJECT_NONE;
+          throw ProgramError("Callable not found: " + name);
       }
+    }
+  }
+};
+
+class ExpressionAST {
+  ExpressionType* expression;
+public:
+  bool parse(TokenStream& tokens) {
+    //TODO
+
+    return false;
+  }
+
+  Object execute(Environment& e, Program& p) const {
+    if(expression) {
+      return expression->execute(e, p);
     }
   }
 };
 
 //supertype for statements
 class StatementType {
-
 public:
   virtual bool parse(TokenStream& tokens) = 0;
   virtual Object execute(Environment& e, Program& p) const = 0;
 };
 
 //assigns a variable to the value of some expression
-//assignment is optional
+//assignment is optional, expression is not
 class StatementTypeAssignAST : public StatementType {
-
-public:
-  virtual bool parse(TokenStream& tokens) override {
-    
-  }
-
-  virtual Object execute(Environment& e, Program& p) const override {
-    
-  }
-};
-
-class StatementTypeReturnAST : public StatementType {
-
+  string assignTo; //may be empty
+  ExpressionAST expr;
 public:
   virtual bool parse(TokenStream& tokens) override {
     int pos = tokens.getPos();
 
-    if(tokens(TOKEN_TYPE_KEYWORD_RETURN)) {
-      
+    //assign part
+    Token tmp;
+    if(tokens(TOKEN_TYPE_IDENTIFIER, &tmp) && tokens(TOKEN_TYPE_ASSIGN)) {
+      assignTo = tmp.getValue();
+    } else {
+      tokens.setPos(pos);
+    }
+    //value part
+    if(expr.parse(tokens) {
+      return true;
+    } else {
+      tokens.setPos(pos);
+      return false;
+    }
+  }
+
+  virtual Object execute(Environment& e, Program& p) const override {
+    //evaluate the expression
+    Object o = expr.execute(e, p);
+    if(assignTo.size()) e[assignTo] = o;
+    //only return statment returns a value here, signifying function is complete
+    return OBJECT_NONE;
+  }
+};
+
+class StatementTypeReturnAST : public StatementType {
+  ExpressionAST expr;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+
+    if(tokens(TOKEN_TYPE_KEYWORD_RETURN) && expr.parse(tokens)) {
+      return true;
     }
 
     tokens.setPos(pos);
@@ -179,7 +227,7 @@ public:
   }
 
   virtual Object execute(Environment& e, Program& p) const override {
-    
+    return expr.execute(e, p);
   }
 };
 
@@ -189,13 +237,30 @@ class StatementAST {
   StatementType* statement;
 public:
   bool parse(TokenStream& tokens) {
-    return false;
+    int pos = tokens.getPos();
+
+    statement = new StatementTypeReturnAST();
+    if(statement->parse(tokens)) {
+      return true;
+    } else {
+      delete statement;
+      tokens.setPos(pos);
+      statement = new StatementTypeAssignAST();
+      if(statement->parse(tokens)) {
+        return true;
+      } else {
+        delete statement;
+        tokens.setPos(pos);
+        return false;
+      }
+    }
   }
 
   Object execute(Environment& e, Program& p) const {
     if(statement) {
       return statement->execute(e, p);
     }
+    return OBJECT_NONE;
   }
 };
 
@@ -262,6 +327,7 @@ public:
       //only "return" statement should return a value
       if((tmp = s->execute(e, p))) return tmp;
     }
+    return OBJECT_NONE;
   }
 };
 
@@ -311,6 +377,7 @@ QwakParser::QwakParser() {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_COMMA, ","));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_DOTS, ".."));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PIPE, "|"));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_ASSIGN, "="));
 
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PLUS, "+"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_MINUS, "-"));
