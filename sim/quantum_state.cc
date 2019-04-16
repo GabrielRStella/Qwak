@@ -56,6 +56,7 @@ double QuantumState::getProbabilityDoubleOfState(int state) const {
 }
 
 ex QuantumState::getProbabilityOfQubit(int qubit) const {
+  qubit = n - qubit - 1; //flip
   ex sum = 0;
   int mask = QuantumState::maskQubitOn(qubit);
   for(int state = 0; state < dim; state++) {
@@ -130,6 +131,7 @@ bool QuantumState::sample(int qubit) const {
 
 QuantumState QuantumState::measure(int qubit) const {
   bool measurement = sample(qubit);
+  qubit = n - qubit - 1;
   int mask = QuantumState::maskQubitOn(qubit);
 
   vector<ex> probabilities;
@@ -147,7 +149,7 @@ QuantumState QuantumState::measure(int qubit) const {
   matrix amps = matrix(dim, 1);
   for(int state = 0; state < dim; state++) {
     if(bool(mask & state) == measurement) {
-      amps(state, 0) = probabilities[state] / total_probability;
+      amps(state, 0) = sqrt(probabilities[state] / total_probability);
     }
   }
 

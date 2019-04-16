@@ -8,11 +8,11 @@ using namespace Qwality;
 
 int main() {
     int n = 2;
-    bool x[] = {1,0,1}; // x = {x_1,x_2,x_3}.
+    bool x[] = {1,0,0}; // x = {x_1,x_2,x_3}.
 
     ex omega = 0;
     for(int i = 0; i < n; ++i) {
-        omega += x[i] * GiNaC::pow(2,-(i+1));
+        if(x[i]) omega += GiNaC::pow(2,-(i+1));
     }
 
     cout << "omega: " << omega << endl;
@@ -22,9 +22,9 @@ int main() {
         mat(i,0) = pow(Euler,2*Pi*I*omega*ex(i));
     }
 
-    //QuantumState psi(n,mat);
+    QuantumState psi(n,mat);
 
-    QuantumState psi(n);
+    //QuantumState psi(n);
     
     cout << "|psi_0>: " << psi << endl;
 
