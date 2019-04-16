@@ -52,5 +52,13 @@ int main() {
     cout << "qs1 ** qs3 ** qs2: " << qs1.tensor(qs3).tensor(qs2) << endl;
   }
 
+  {
+    int n = 3;
+    for(int i = 0; i < (1<<n); i++) {
+      QuantumState qs(n, i);
+      cout << "qs " << i << ": " << qs << endl;
+    }
+  }
+
   return 0;
 }

@@ -38,19 +38,7 @@ const int TOKEN_TYPE_IDENTIFIER = 301; //identifier, e.g. a variable or function
 //helpers
 
 template<typename T>
-void parseSome(TokenStream& tokens, vector<T>& store) {
-  T tmp;
-
-  int pos = tokens.getPos();
-  while(tmp.parse(tokens)) {
-    store.push_back(tmp);
-    pos = tokens.getPos();
-  }
-  tokens.setPos(pos);
-}
-
-template<typename T>
-void parseSomePtr(TokenStream& tokens, vector<T*>& store) {
+void parseSome(TokenStream& tokens, vector<T*>& store) {
   T* tmp;
 
   int pos = tokens.getPos();
@@ -104,15 +92,110 @@ public:
 };
 */
 
-class StatementAST {
+//supertype for expressions
+class ExpressionType {
 
+public:
+  virtual bool parse(TokenStream& tokens) = 0;
+  virtual Object execute(Environment& e, Program& p) const = 0;
+};
+
+//may be function call or gate application
+class ExpressionTypeFunctionCallAST : public ExpressionType {
+  string name;
+  vector<ExpressionType*> expressions;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    //of form: identifier(expr, expr, ...)[list]
+  }
+
+  virtual Object execute(Environment& e, Program& p) const override {
+    Function* f = p.getFunction(name);
+    if(f) {
+      int scopeLevel = e.push();
+      Object o = f->execute(e);
+      return o;
+    } else {
+      Object gate = e[name];
+      if(gate) {
+        if(gate.getType() == DATATYPE_GATE) {
+          //apply gate to args
+          if(expressions.size() == 1) {
+            Object o = expressions[0]->execute(e, p);
+            if(o.getType() == DATATYPE_STATE) {
+              //yay!
+
+              //TODO: actual application and return value
+            } else {
+              throw ProgramError("Attempted to apply gate to incorrect type");
+            }
+          } else {
+            throw ProgramError("Attempted to apply gate to multiple variables");
+          }
+        } else {
+          throw ProgramError("Attempted to call non-callable: " + name);
+        }
+      } else {
+        return OBJECT_NONE;
+      }
+    }
+  }
+};
+
+//supertype for statements
+class StatementType {
+
+public:
+  virtual bool parse(TokenStream& tokens) = 0;
+  virtual Object execute(Environment& e, Program& p) const = 0;
+};
+
+//assigns a variable to the value of some expression
+//assignment is optional
+class StatementTypeAssignAST : public StatementType {
+
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    
+  }
+
+  virtual Object execute(Environment& e, Program& p) const override {
+    
+  }
+};
+
+class StatementTypeReturnAST : public StatementType {
+
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+
+    if(tokens(TOKEN_TYPE_KEYWORD_RETURN)) {
+      
+    }
+
+    tokens.setPos(pos);
+    return false;
+  }
+
+  virtual Object execute(Environment& e, Program& p) const override {
+    
+  }
+};
+
+//other
+
+class StatementAST {
+  StatementType* statement;
 public:
   bool parse(TokenStream& tokens) {
     return false;
   }
 
-  Object execute(Environment& e) const {
-    
+  Object execute(Environment& e, Program& p) const {
+    if(statement) {
+      return statement->execute(e, p);
+    }
   }
 };
 
@@ -148,7 +231,7 @@ public:
 
 class FunctionAST : public Function {
   FunctionPrototypeAST proto;
-  vector<StatementAST> statements;
+  vector<StatementAST*> statements;
 public:
   const string getName() const override {
     return proto.getName();
@@ -173,8 +256,12 @@ public:
     return false;
   }
 
-  virtual Object execute(Environment& e) const override {
-    
+  virtual Object execute(Environment& e, Program& p) const override {
+    Object tmp;
+    for(StatementAST* s : statements) {
+      //only "return" statement should return a value
+      if((tmp = s->execute(e, p))) return tmp;
+    }
   }
 };
 
@@ -182,7 +269,7 @@ class ProgramAST : public Program {
 public:
   void parse(TokenStream& tokens) {
     vector<FunctionAST*> tmp;
-    parseSomePtr<FunctionAST>(tokens, tmp);
+    parseSome<FunctionAST>(tokens, tmp);
     for(Function* f : tmp) addFunction(f);
   }
 };
@@ -248,5 +335,7 @@ Program* QwakParser::parse(const std::string& buffer) {
   p->parse(stream);
   return p;
 }
+
+ProgramError::ProgramError(const string& what) : QwakError(what) {}
 
 } //end namespace

@@ -162,7 +162,7 @@ void QuantumState::measure_(int qubit, bool* choice) {
   amplitudes = measure(qubit, choice).amplitudes; //ez
 }
 
-QuantumState QuantumState::measure(const vector<int>& qubits, int* choice = nullptr) const {
+QuantumState QuantumState::measure(const vector<int>& qubits, int* choice) const {
   QuantumState tmp(*this);
 
   int theChoice = 0;
@@ -179,7 +179,7 @@ QuantumState QuantumState::measure(const vector<int>& qubits, int* choice = null
   return tmp;
 }
 
-void QuantumState::measure_(const vector<int>& qubits, int* choice = nullptr) {
+void QuantumState::measure_(const vector<int>& qubits, int* choice) {
   amplitudes = measure(qubits, choice).amplitudes; //ez
 }
 

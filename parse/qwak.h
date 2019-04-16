@@ -15,13 +15,15 @@ using std::string;
 using std::vector;
 using std::unordered_map;
 
+class Program;
+
 //an executable function
 class Function {
 public:
   //TODO: API
   virtual const string getName() const = 0;
   virtual const vector<string>& getArgs() const;
-  virtual Object execute(Environment& e) const = 0;
+  virtual Object execute(Environment& e, Program& p) const = 0;
 };
 
 class Program {
@@ -41,11 +43,13 @@ private:
 public:
   QwakParser();
 
-  //parses string -> Tokens -> AST
+  //parses string -> Tokens -> AST -> Program
   Program* parse(const std::string& buffer);
-  //parses AST -> program
-  //(TODO)
-  
+};
+
+class ProgramError : public QwakError {
+public:
+  ParserError(const string& what);
 };
 
 } //end namespace
