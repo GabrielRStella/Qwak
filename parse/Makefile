@@ -24,7 +24,7 @@ tests: tests.o qwak.a
 #Generates a static library
 #https://stackoverflow.com/a/32168987
 #Consider using a .so (runtime library)?
-qwak.a: parse.o
+qwak.a: parse.o qwak.o
 	ar rcs $@ $^
 
 clean:
