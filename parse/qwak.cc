@@ -1,5 +1,8 @@
 #include "qwak.h"
 
+//tmp stuff
+#include <cstdio>
+
 namespace Qwak {
 
 //just start at 100 for safety
@@ -719,6 +722,7 @@ QwakParser::QwakParser() {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_DOTS, ".."));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PIPE, "|"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_ASSIGN, "="));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_EQUALS, "=="));
 
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PLUS, "+"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_MINUS, "-"));
@@ -736,6 +740,10 @@ QwakParser::QwakParser() {
 
   tokenRules.push_back(new TokenRuleNumeric(true, TOKEN_TYPE_LITERAL));
   tokenRules.push_back(new TokenRuleAlphabetic(true, TOKEN_TYPE_IDENTIFIER));
+}
+
+Program* QwakParser::createEmptyProgram() {
+  return new ProgramAST();
 }
 
 Program* QwakParser::parse(const std::string& buffer) {

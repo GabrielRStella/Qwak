@@ -36,7 +36,10 @@ TokenRuleExact::TokenRuleExact(bool keepToken__, int tokenType_, string match_) 
 int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
   std::size_t len = match.size();
   if(buffer.size() - begin < len) return begin;
-  if(buffer.substr(begin, len) == match) return begin + len;
+  if(buffer.substr(begin, len) == match) {
+    *fill = Token(tokenType, match);
+    return begin + len;
+  }
   return begin;
 }
 
@@ -75,7 +78,7 @@ void TokenStream::tokenize() {
     for(auto rule : rules) {
       newPos = rule->apply(buffer, pos, &tmp);
       if(newPos != pos) {
-        tokens.push_back(tmp);
+        if(rule->keepToken()) tokens.push_back(tmp);
         break;
       }
     }
@@ -83,6 +86,7 @@ void TokenStream::tokenize() {
       //was unable to match any token
       throw TokenizerError("Unable to tokenize input", pos);
     }
+    pos = newPos;
   }
 
   hasTokenized = true;
@@ -110,6 +114,8 @@ void TokenStream::operator++(int) { //postfix
 }
 
 bool TokenStream::operator()(int tokenType, Token* t) {
+  if(!(*this)) return false; //check for more tokens
+
   Token& tmp = tokens[curPos];
   if(tmp.getType() == tokenType) {
     if(t) *t = tmp;

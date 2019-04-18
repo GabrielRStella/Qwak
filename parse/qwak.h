@@ -45,6 +45,8 @@ private:
 public:
   QwakParser();
 
+  Program* createEmptyProgram();
+
   //parses string -> Tokens -> AST -> Program
   Program* parse(const std::string& buffer);
 

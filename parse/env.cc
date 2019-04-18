@@ -33,8 +33,13 @@ Environment::Environment() : state(0), variables(), scopeLevel(0) {
   val[0] = 0;
   val[1] = 0;
   state_ = Object(DATATYPE_STATE, val);
+  variables.emplace(); //add first level of scope
   //auto-variables
+  (*this)["I"] = createObject(QuantumGate::I);
   (*this)["H"] = createObject(QuantumGate::H);
+  (*this)["X"] = createObject(QuantumGate::X);
+  (*this)["Y"] = createObject(QuantumGate::Y);
+  (*this)["Z"] = createObject(QuantumGate::Z);
 }
 
 Object& Environment::operator[](const std::string& variable) {
