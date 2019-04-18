@@ -26,7 +26,7 @@ tests: tests.o qwak.a
 #Consider using a .so (runtime library)?
 qwak.a: env.o parse.o qwak.o
 	(cd ../sim && make)
-	ar rcs $@ $^ ../sim/quantum_simulator.a
+	ar rcs $@ $^
 	#(cd ../sim && make clean)
 
 clean:
