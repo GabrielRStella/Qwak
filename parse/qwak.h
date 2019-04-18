@@ -20,10 +20,12 @@ class Program;
 //an executable function
 class Function {
 public:
+  virtual ~Function();
   //TODO: API
   virtual const string getName() const = 0;
-  virtual const vector<string>& getArgs() const;
-  virtual Object execute(Environment& e, Program& p) const = 0;
+  virtual const vector<string>& getArgs() const = 0;
+  //substate is an additional argument for gates and/or built-in functions
+  virtual Object execute(Environment& e, Program& p, const vector<int>& substate) const = 0;
 };
 
 class Program {
@@ -45,6 +47,8 @@ public:
 
   //parses string -> Tokens -> AST -> Program
   Program* parse(const std::string& buffer);
+
+  Object execute(const std::string& statement, Program& p, Environment& e);
 };
 
 class ProgramError : public QwakError {

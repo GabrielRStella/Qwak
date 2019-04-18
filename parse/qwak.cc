@@ -22,19 +22,20 @@ const int TOKEN_TYPE_COMMA = 110; // , for args or lists
 const int TOKEN_TYPE_DOTS = 111; // .. for ranges
 const int TOKEN_TYPE_PIPE = 112; // |
 const int TOKEN_TYPE_ASSIGN = 113; // =
+const int TOKEN_TYPE_EQUALS = 114; // ==
 //ops
 const int TOKEN_TYPE_PLUS = 120;
 const int TOKEN_TYPE_MINUS = 121;
 const int TOKEN_TYPE_CONCAT = 122; // ^ for |0^n> etc
-const int TOKEN_TYPE_EXPONENT = 122; // **
-const int TOKEN_TYPE_TENSOR = 122; // ^*
-const int TOKEN_TYPE_TENSOR_EXPONENT = 122; // ^**
+const int TOKEN_TYPE_EXPONENT = 123; // **
+const int TOKEN_TYPE_TENSOR = 124; // ^*
+const int TOKEN_TYPE_TENSOR_EXPONENT = 125; // ^**
 //keywords
 const int TOKEN_TYPE_KEYWORD_FUNCTION = 200;
 const int TOKEN_TYPE_KEYWORD_RETURN = 201;
 //other
-const int TOKEN_TYPE_LITERAL = 300; //literal of some sort: state, number, list, etc
-const int TOKEN_TYPE_IDENTIFIER = 301; //identifier, e.g. a variable or function name
+const int TOKEN_TYPE_LITERAL = 300; //an integer literal, possibly in |binary> notation
+const int TOKEN_TYPE_IDENTIFIER = 302; //identifier, e.g. a variable or function name
 
 //helpers
 
@@ -81,43 +82,330 @@ void parseSeparated(TokenStream& tokens, int type, int separator, vector<string>
   }
 }
 
+template<typename T>
+void parseList(TokenStream& tokens, int separator, vector<T*>& store) {
+  int pos = tokens.getPos();
+
+  T* t = new T();
+  if(t->parse(tokens)) {
+    store.push_back(t);
+    t = new T();
+    while(true) {
+      pos = tokens.getPos();
+      if(tokens(separator)) {
+        if(t->parse(tokens)) {
+          store.push_back(t);
+          t = new T();
+        } else {
+          delete t;
+          throw ParserError("Expected value after comma", tokens.getPos());
+        }
+      } else {
+        tokens.setPos(pos);
+        delete t;
+        break;
+      }
+    }
+  } else {
+    delete t;
+    tokens.setPos(pos);
+  }
+}
+
+template<typename T>
+bool parseListBounded(TokenStream& tokens, int separator, vector<T*>& store, int left = TOKEN_TYPE_PARENS_LEFT, int right = TOKEN_TYPE_PARENS_RIGHT) {
+  Token tmp;
+
+  int pos = tokens.getPos();
+
+  if(tokens(left)) {
+    //parse some
+    parseList(tokens, separator, store);
+    if(tokens(right)) {
+      return true;
+    }
+  }
+  tokens.setPos(pos);
+  return false;
+}
+
 //semantic elements
 
 //supertype for expressions
 class ExpressionType {
 public:
   virtual bool parse(TokenStream& tokens) = 0;
-  virtual Object execute(Environment& e, Program& p) const = 0;
+  virtual Object evaluate(Environment& e, Program& p) const = 0;
 };
 
-//TODO: more expression types
-/*
-class ExpressionType : public ExpressionType {
+class ExpressionTypeLiteralStateAST : public ExpressionType {
+  int state;
+  int n;
 public:
   virtual bool parse(TokenStream& tokens) override {
-    //TODO
+    int pos = tokens.getPos();
+    Token tmp;
+    if(tokens(TOKEN_TYPE_PIPE) && tokens(TOKEN_TYPE_LITERAL, &tmp) && tokens(TOKEN_TYPE_ANGLE_RIGHT)) {
+      state = std::stoi(tmp.getValue(), nullptr, 2);
+      n = tmp.getValue().size(); //number of qubits = length of binary string
+      return true;
+    }
+    tokens.setPos(pos);
     return false;
   }
 
-  virtual Object execute(Environment& e, Program& p) const override {
-    
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return e.createObject(Qwality::QuantumState(n, state));
   }
 };
-*/
+
+class ExpressionTypeLiteralIntAST : public ExpressionType {
+  int value;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    Token tmp;
+    if(tokens(TOKEN_TYPE_LITERAL, &tmp)) {
+      value = std::stoi(tmp.getValue());
+      return true;
+    }
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return e.createObject(value);
+  }
+};
+
+class ExpressionTypeIdentifierAST : public ExpressionType {
+  string name;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    Token tmp;
+    if(tokens(TOKEN_TYPE_IDENTIFIER, &tmp)) {
+      name = tmp.getValue();
+      return true;
+    }
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return e[name];
+  }
+};
+
+//literal or variable
+//literal = <decimal number> or |<binary number>>
+//variable = <identifier>
+class ExpressionTypePrimaryAST : public ExpressionType {
+  ExpressionType* expression;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+
+    expression = new ExpressionTypeLiteralStateAST();
+    if(expression->parse(tokens)) {
+      return true;
+    } else {
+      delete expression;
+      tokens.setPos(pos);
+      expression = new ExpressionTypeLiteralIntAST();
+      if(expression->parse(tokens)) {
+        return true;
+      } else {
+        delete expression;
+        tokens.setPos(pos);
+        expression = new ExpressionTypeIdentifierAST();
+        if(expression->parse(tokens)) {
+          return true;
+        } else {
+          delete expression;
+          tokens.setPos(pos);
+          return false;
+        }
+      }
+    }
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return expression ? expression->evaluate(e, p) : OBJECT_NONE;
+  }
+};
+
+//expr ** ^* ^**
+class ExpressionTypeSecondaryAST : public ExpressionType {
+  ExpressionTypePrimaryAST left;
+  ExpressionTypePrimaryAST right;
+  string op;
+  bool hasRight;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+    if(left.parse(tokens)) {
+      pos = tokens.getPos();
+      Token opt;
+      if(tokens(TOKEN_TYPE_EXPONENT, &opt) || tokens(TOKEN_TYPE_TENSOR, &opt) || tokens(TOKEN_TYPE_TENSOR_EXPONENT, &opt)) {
+        op = opt.getValue();
+        if(right.parse(tokens)) {
+          return true;
+        } else {
+          throw ParserError("Expected primary expression after operator " + op, tokens.getPos());
+        }
+      } else {
+        hasRight = false;
+        tokens.setPos(pos);
+        return true;
+      }
+    }
+    tokens.setPos(pos);
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    if(hasRight) {
+      Object o1 = left.evaluate(e, p);
+      Object o2 = right.evaluate(e, p);
+      return e.applyOperator(op, o1, o2);
+    } else {
+      return left.evaluate(e, p);
+    }
+  }
+};
+
+//expr + -
+class ExpressionTypeTertiaryAST : public ExpressionType {
+  ExpressionTypeSecondaryAST left;
+  ExpressionTypeSecondaryAST right;
+  string op;
+  bool hasRight;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+    if(left.parse(tokens)) {
+      pos = tokens.getPos();
+      Token opt;
+      if(tokens(TOKEN_TYPE_PLUS, &opt) || tokens(TOKEN_TYPE_MINUS, &opt)) {
+        op = opt.getValue();
+        if(right.parse(tokens)) {
+          return true;
+        } else {
+          throw ParserError("Expected seconday expression after operator " + op, tokens.getPos());
+        }
+      } else {
+        hasRight = false;
+        tokens.setPos(pos);
+        return true;
+      }
+    }
+    tokens.setPos(pos);
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    if(hasRight) {
+      Object o1 = left.evaluate(e, p);
+      Object o2 = right.evaluate(e, p);
+      return e.applyOperator(op, o1, o2);
+    } else {
+      return left.evaluate(e, p);
+    }
+  }
+};
+
+//expr a or (a)
+class ExpressionTypeQuaternaryAST : public ExpressionType {
+  ExpressionTypeTertiaryAST expr;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+    if(tokens(TOKEN_TYPE_PARENS_LEFT)) {
+      if(expr.parse(tokens) && tokens(TOKEN_TYPE_PARENS_RIGHT)) {
+        return true;
+      } else {
+        tokens.setPos(pos);
+        return false;
+      }
+    } else {
+      return expr.parse(tokens);
+    }
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return expr.evaluate(e, p);
+  }
+};
+
+//expr a == b
+class ExpressionTypeQuinaryAST : public ExpressionType {
+  ExpressionTypeQuaternaryAST left;
+  ExpressionTypeQuaternaryAST right;
+  string op;
+  bool hasRight;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    int pos = tokens.getPos();
+    if(left.parse(tokens)) {
+      pos = tokens.getPos();
+      Token opt;
+      if(tokens(TOKEN_TYPE_EQUALS, &opt)) {
+        op = opt.getValue();
+        if(right.parse(tokens)) {
+          return true;
+        } else {
+          throw ParserError("Expected quaternary expression after operator " + op, tokens.getPos());
+        }
+      } else {
+        hasRight = false;
+        tokens.setPos(pos);
+        return true;
+      }
+    }
+    tokens.setPos(pos);
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    if(hasRight) {
+      Object o1 = left.evaluate(e, p);
+      Object o2 = right.evaluate(e, p);
+      return e.applyOperator(op, o1, o2); //should handle == just fine, and return classical |0> or |1>
+    } else {
+      return left.evaluate(e, p);
+    }
+  }
+};
 
 //may be function call or gate application
 class ExpressionTypeFunctionCallAST : public ExpressionType {
   string name;
-  vector<ExpressionType*> expressions;
+  vector<ExpressionTypeQuinaryAST*> expressions;
+  vector<int> qubits;
 public:
   virtual bool parse(TokenStream& tokens) override {
-    //TODO
     //of form: identifier(expr, expr, ...)[list]
+    int pos = tokens.getPos();
 
+    Token tmp;
+    if(tokens(TOKEN_TYPE_IDENTIFIER, &tmp) && parseListBounded(tokens, TOKEN_TYPE_COMMA, expressions)) {
+      name = tmp.getValue();
+      //additional list of integers at the end
+      if(tokens(TOKEN_TYPE_BRACKET_LEFT)) {
+        vector<string> qubitsTmp;
+        parseSeparated(tokens, TOKEN_TYPE_LITERAL, TOKEN_TYPE_COMMA, qubitsTmp);
+        if(TOKEN_TYPE_BRACKET_RIGHT) {
+          for(const string& s : qubitsTmp) qubits.push_back(std::stoi(s));
+          return true;
+        } else {
+          throw ParserError("Invalid bracket sequence after callable", tokens.getPos());
+        }
+      }
+      return true;
+    }
+
+    tokens.setPos(pos);
     return false;
   }
 
-  virtual Object execute(Environment& e, Program& p) const override {
+  virtual Object evaluate(Environment& e, Program& p) const override {
     Function* f = p.getFunction(name);
     if(f) {
       int len = expressions.size();
@@ -125,14 +413,14 @@ public:
         //evaluate expressions
         vector<Object> objects(len);
         for(int i = 0; i < len; i++) {
-          objects[i] = expressions[i]->execute(e, p);
+          objects[i] = expressions[i]->evaluate(e, p);
         }
         int scopeLevel = e.push();
         //reassign values into new scope
         for(int i = 0; i < len; i++) {
           e[f->getArgs()[i]] = objects[i];
         }
-        Object o = f->execute(e, p);
+        Object o = f->execute(e, p, qubits);
         if(e.pop() == scopeLevel) {
           return o;
         } else {
@@ -147,11 +435,13 @@ public:
         if(gate.getType() == DATATYPE_GATE) {
           //apply gate to args
           if(expressions.size() == 1) {
-            Object o = expressions[0]->execute(e, p);
+            Object o = expressions[0]->evaluate(e, p);
             if(o.getType() == DATATYPE_STATE) {
               //yay!
 
-              //TODO: actual application, return value
+              //actual application (with substate), return value
+              if(qubits.size()) return e.applyGate(gate, o, qubits);
+              else return e.applyGate(gate, o);
             } else {
               throw ProgramError("Attempted to apply gate to incorrect type");
             }
@@ -172,14 +462,29 @@ class ExpressionAST {
   ExpressionType* expression;
 public:
   bool parse(TokenStream& tokens) {
-    //TODO
+    int pos = tokens.getPos();
 
-    return false;
+    //order: function call OR equality (...parens, ...)
+    expression = new ExpressionTypeFunctionCallAST();
+    if(expression->parse(tokens)) {
+      return true;
+    } else {
+      delete expression;
+      tokens.setPos(pos);
+      expression = new ExpressionTypeQuinaryAST();
+      if(expression->parse(tokens)) {
+        return true;
+      } else {
+        delete expression;
+        tokens.setPos(pos);
+        return false;
+      }
+    }
   }
 
-  Object execute(Environment& e, Program& p) const {
+  Object evaluate(Environment& e, Program& p) const {
     if(expression) {
-      return expression->execute(e, p);
+      return expression->evaluate(e, p);
     }
   }
 };
@@ -189,6 +494,7 @@ class StatementType {
 public:
   virtual bool parse(TokenStream& tokens) = 0;
   virtual Object execute(Environment& e, Program& p) const = 0;
+  virtual Object evaluate(Environment& e, Program& p) const = 0;
 };
 
 //assigns a variable to the value of some expression
@@ -218,10 +524,17 @@ public:
 
   virtual Object execute(Environment& e, Program& p) const override {
     //evaluate the expression
-    Object o = expr.execute(e, p);
+    Object o = expr.evaluate(e, p);
     if(assignTo.size()) e[assignTo] = o;
     //only return statment returns a value here, signifying function is complete
     return OBJECT_NONE;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    //evaluate the expression
+    Object o = expr.evaluate(e, p);
+    if(assignTo.size()) e[assignTo] = o;
+    return o;
   }
 };
 
@@ -240,7 +553,11 @@ public:
   }
 
   virtual Object execute(Environment& e, Program& p) const override {
-    return expr.execute(e, p);
+    return expr.evaluate(e, p);
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return expr.evaluate(e, p);
   }
 };
 
@@ -272,6 +589,13 @@ public:
   Object execute(Environment& e, Program& p) const {
     if(statement) {
       return statement->execute(e, p);
+    }
+    return OBJECT_NONE;
+  }
+
+  Object evaluate(Environment& e, Program& p) const {
+    if(statement) {
+      return statement->evaluate(e, p);
     }
     return OBJECT_NONE;
   }
@@ -307,6 +631,10 @@ public:
   }
 };
 
+//gotta put this here to get rid of compiler errors...
+Function::~Function() {
+}
+
 class FunctionAST : public Function {
   FunctionPrototypeAST proto;
   vector<StatementAST*> statements;
@@ -334,7 +662,7 @@ public:
     return false;
   }
 
-  virtual Object execute(Environment& e, Program& p) const override {
+  virtual Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
     Object tmp;
     for(StatementAST* s : statements) {
       //only "return" statement should return a value
@@ -405,15 +733,29 @@ QwakParser::QwakParser() {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_KEYWORD_RETURN, "return"));
 
   //other...
+
+  tokenRules.push_back(new TokenRuleNumeric(true, TOKEN_TYPE_LITERAL));
+  tokenRules.push_back(new TokenRuleAlphabetic(true, TOKEN_TYPE_IDENTIFIER));
 }
 
 Program* QwakParser::parse(const std::string& buffer) {
   TokenStream stream(buffer);
-  for(TokenRule* rule : tokenRules) stream.addRule(rule);
+  stream.addRules(tokenRules);
 
   ProgramAST* p = new ProgramAST();
   p->parse(stream);
   return p;
+}
+
+Object QwakParser::execute(const std::string& statement, Program& p, Environment& e) {
+  TokenStream stream(statement);
+  stream.addRules(tokenRules);
+
+  StatementAST s;
+  if(s.parse(stream)) {
+    return s.evaluate(e, p);
+  }
+  return OBJECT_NONE;
 }
 
 ProgramError::ProgramError(const string& what) : QwakError(what) {}

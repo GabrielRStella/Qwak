@@ -19,13 +19,15 @@ test: tests
 	./tests
 
 tests: tests.o qwak.a
-	$(CXX) $^ $(LDFLAGS) -o $@
+	$(CXX) $^ ../sim/quantum_simulator.a $(LDFLAGS) -o $@
 
 #Generates a static library
 #https://stackoverflow.com/a/32168987
 #Consider using a .so (runtime library)?
-qwak.a: parse.o qwak.o
-	ar rcs $@ $^
+qwak.a: env.o parse.o qwak.o
+	(cd ../sim && make)
+	ar rcs $@ $^ ../sim/quantum_simulator.a
+	#(cd ../sim && make clean)
 
 clean:
 	rm -f *.o qwak.a tests
