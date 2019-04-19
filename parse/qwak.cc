@@ -4,6 +4,10 @@
 #include <cstdlib>
 #include <ctime>
 
+//TODO: |0^n> (currently only supports |binary> without ^tensor)
+
+#include <initializer_list>
+
 namespace Qwak {
 
 //just start at 100 for safety
@@ -250,6 +254,7 @@ public:
       if(tokens(TOKEN_TYPE_EXPONENT, &opt) || tokens(TOKEN_TYPE_TENSOR, &opt) || tokens(TOKEN_TYPE_TENSOR_EXPONENT, &opt)) {
         op = opt.getValue();
         if(right.parse(tokens)) {
+          hasRight = true;
           return true;
         } else {
           throw ParserError("Expected primary expression after operator " + op, tokens.getPos());
@@ -290,6 +295,7 @@ public:
       if(tokens(TOKEN_TYPE_PLUS, &opt) || tokens(TOKEN_TYPE_MINUS, &opt)) {
         op = opt.getValue();
         if(right.parse(tokens)) {
+          hasRight = true;
           return true;
         } else {
           throw ParserError("Expected seconday expression after operator " + op, tokens.getPos());
@@ -353,6 +359,7 @@ public:
       if(tokens(TOKEN_TYPE_EQUALS, &opt)) {
         op = opt.getValue();
         if(right.parse(tokens)) {
+          hasRight = true;
           return true;
         } else {
           throw ParserError("Expected quaternary expression after operator " + op, tokens.getPos());
@@ -684,14 +691,34 @@ public:
   }
 };
 
+//builtin functions
+
+class FunctionBuiltin : public Function {
+private string name;
+private vector<string> args;
+public:
+  FunctionBuiltin(string name_, std::initializer_list<string> args_) : name(name_), args(args_) {}
+
+  const string getName() { return name; }
+  const vector<string>& getArgs() { return args; }
+};
+
+//TODO: built-in function subclasses
+
 //public API stuff
 
 void Program::addFunction(Function* f) {
+  if(functionsByName[f->getName()] == nullptr) functions.push_back(f); //it's a new function
+  functionsByName[f->getName()] = f;
+}
+
+bool Program::tryAddFunction(Function* f) {
   //no overriding previous functions
-  if(functionsByName.at(f->getName()) != nullptr) throw QwakError("Attempted to override function definition: " + f->getName());
+  if(functionsByName[f->getName()] != nullptr) return false;
 
   functions.push_back(f);
   functionsByName[f->getName()] = f;
+  return true;
 }
 
 Function* Program::getFunction(string name) const {
@@ -700,6 +727,15 @@ Function* Program::getFunction(string name) const {
 
 const vector<Function*>& Program::getFunctions() const {
   return functions;
+}
+
+void Program::addBuiltinFunctions() {
+//TODO
+//control
+//R_k
+//swap
+//measure
+//dim
 }
 
 QwakParser::QwakParser() : version_("v1.0.0") {

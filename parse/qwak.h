@@ -21,7 +21,7 @@ class Program;
 class Function {
 public:
   virtual ~Function();
-  //TODO: API
+  //API
   virtual const string getName() const = 0;
   virtual const vector<string>& getArgs() const = 0;
   //substate is an additional argument for gates and/or built-in functions
@@ -34,9 +34,12 @@ protected:
   unordered_map<string, Function*> functionsByName;
 public:
   void addFunction(Function* f);
+  bool tryAddFunction(Function* f); //try to add, but don't replace
 
   Function* getFunction(string name) const;
   const vector<Function*>& getFunctions() const;
+
+  void addBuiltinFunctions();
 };
 
 class QwakParser {

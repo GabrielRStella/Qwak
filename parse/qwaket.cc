@@ -1,6 +1,7 @@
 #include "qwak.h"
 
 #include <iostream>
+#include <fstream>
 #include <unordered_map>
 
 using namespace Qwak;
@@ -10,25 +11,52 @@ using namespace std;
 /*
 TODO:
 -commands
---!load: load a .qwak file
 --!env: print all variables in environment
 --!func: print all functions in program
--?
 */
 
 typedef int (*CMD)(QwakParser&, Program&, Environment&, const string&);
 
-int cmd_motd(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+int cmd_motd(QwakParser& parser, Program& p, Environment& e, const string& args) {
   cout << "MOTD: " << parser.motd() << endl;
   return 0;
 }
 
-int cmd_load(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+int cmd_load(QwakParser& parser, Program& p, Environment& e, const string& args_) {
+  string args = args_;
+  args = args + ".qwak";
   cout << "Loading \"" << args << "\"..." << endl;
-  return -1;
+
+  //https://stackoverflow.com/q/2602013
+  std::ifstream t;
+  t.open(args);      // open input file
+  if(!t.good()) return -1;
+  t.seekg(0, std::ios::end);    // go to the end
+  auto length = t.tellg();           // report location (this is the length)
+  t.seekg(0, std::ios::beg);    // go back to the beginning
+  char* buffer = new char[length];    // allocate memory for a buffer of appropriate dimension
+  t.read(buffer, length);       // read the whole file into the buffer
+  t.close();                    // close file handle
+
+  //copy all loaded functions
+  Program* p2 = parser.parse(string(buffer));
+  auto fs = p2->getFunctions();
+  cout << "Loaded " << fs.size() << " functions:" << endl;
+  for(Function* f : fs) {
+    cout << " " << f->getName() << "(";
+    auto args = f->getArgs();
+    for(auto i = 0; i < args.size(); i++) {
+      if(i) cout << ", ";
+      cout << args[i];
+    }
+    cout << ")" << endl;
+    p.addFunction(f);
+  }
+
+  return 0;
 }
 
-int cmd_state(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+int cmd_state(QwakParser& parser, Program& p, Environment& e, const string& args) {
   cout << "State: " << e.getState() << endl;
   return 0;
 }
@@ -39,6 +67,8 @@ int main() {
 
   Program* pr = parser.createEmptyProgram();
   Program& p = *pr;
+
+  p.addBuiltinFunctions();
 
   Environment e;
 

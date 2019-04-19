@@ -16,7 +16,9 @@ namespace Qwak {
 using Qwality::QuantumState;
 using Qwality::QuantumGate;
 
+using std::string;
 using std::vector;
+using std::unordered_map;
 
 const int DATATYPE_NONE = 0;
 const int DATATYPE_STATE = 1; //quantum state
@@ -42,11 +44,21 @@ public:
 
   int getType() const;
   void* getData() const;
+  template<typename T>
+  T& castData() const;
 
   void setData(int type, void* data);
 };
 
+template<typename T>
+T& Object::castData() const {
+  return *(T*)data;
+}
+
 const Object OBJECT_NONE;
+
+class Environment; //forward decl...
+typedef Object (*Operator)(Environment&, Object, Object);
 
 //encapsulates the quantum state and other variables within a function
 class Environment {
@@ -55,8 +67,12 @@ private:
   Object state_;
 
   //scoped list of variables (Objects)
-  std::stack<std::unordered_map<std::string, Object>> variables;
+  std::stack<unordered_map<string, Object>> variables;
+  unordered_map<string, Object> constants;
   int scopeLevel;
+
+  //all available operators
+  unordered_map<string, unordered_map<int, unordered_map<int, Operator>>> operators;
 
 public:
   Environment();
@@ -64,7 +80,7 @@ public:
   QuantumState& getState();
 
   //create or modify variable
-  Object& operator[](const std::string& variable);
+  Object& operator[](const string& variable);
 
   //when an Environment gets pushed to a new scope, it keeps the quantum state, but wipes all variables/references
   int getScopeLevel();
@@ -73,7 +89,7 @@ public:
 
 //operations
 public:
-  Object applyOperator(const std::string& op, Object left, Object right);
+  Object applyOperator(const string& op, Object left, Object right);
   Object applyGate(Object gate, Object state);
   Object applyGate(Object gate, Object state, const vector<int>& qubits);
 

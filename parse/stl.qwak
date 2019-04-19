@@ -1,0 +1,3 @@
+function KetPlus() {
+  return H(|0>)
+}
