@@ -42,6 +42,10 @@ Environment::Environment() : state(0), variables(), scopeLevel(0) {
   (*this)["Z"] = createObject(QuantumGate::Z);
 }
 
+QuantumState& Environment::getState() {
+  return state;
+}
+
 Object& Environment::operator[](const std::string& variable) {
   if(variable == "STATE") return state_;
   return variables.top()[variable];

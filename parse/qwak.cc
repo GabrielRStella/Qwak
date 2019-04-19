@@ -441,7 +441,6 @@ public:
             Object o = expressions[0]->evaluate(e, p);
             if(o.getType() == DATATYPE_STATE) {
               //yay!
-
               //actual application (with substate), return value
               if(qubits.size()) return e.applyGate(gate, o, qubits);
               else return e.applyGate(gate, o);
@@ -695,7 +694,7 @@ void Program::addFunction(Function* f) {
 }
 
 Function* Program::getFunction(string name) const {
-  return functionsByName.at(name);
+  return (functionsByName.find(name) != functionsByName.end()) ? functionsByName.at(name) : nullptr;
 }
 
 const vector<Function*>& Program::getFunctions() const {

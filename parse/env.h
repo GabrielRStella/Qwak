@@ -61,6 +61,8 @@ private:
 public:
   Environment();
 
+  QuantumState& getState();
+
   //create or modify variable
   Object& operator[](const std::string& variable);
 

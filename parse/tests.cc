@@ -37,7 +37,31 @@ int main() {
   cout << endl;
   execute(parser, p, e, "l");
   cout << endl;
-  execute(parser, p, e, "l");
+
+  cout << "State: " << e.getState() << endl << endl;
+
+  execute(parser, p, e, "a=|0>");
+  cout << endl;
+
+  cout << "State: " << e.getState() << endl << endl;
+
+  execute(parser, p, e, "b=|0>");
+  cout << endl;
+
+  cout << "State: " << e.getState() << endl << endl;
+
+  execute(parser, p, e, "l(a)");
+
+  cout << "State: " << e.getState() << endl << endl;
+
+  execute(parser, p, e, "H(a)");
+
+  cout << "State: " << e.getState() << endl << endl;
+
+  execute(parser, p, e, "H(a)");
+  execute(parser, p, e, "H(b)");
+
+  cout << "State: " << e.getState() << endl << endl;
 
   cout << endl << "Bye!" << endl;
 
