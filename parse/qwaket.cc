@@ -13,6 +13,7 @@ TODO:
 -commands
 --!env: print all variables in environment
 --!func: print all functions in program
+-expr: state substate a[...]
 */
 
 typedef int (*CMD)(QwakParser&, Program&, Environment&, const string&);

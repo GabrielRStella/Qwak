@@ -694,8 +694,8 @@ public:
 //builtin functions
 
 class FunctionBuiltin : public Function {
-private string name;
-private vector<string> args;
+string name;
+vector<string> args;
 public:
   FunctionBuiltin(string name_, std::initializer_list<string> args_) : name(name_), args(args_) {}
 

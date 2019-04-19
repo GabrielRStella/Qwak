@@ -89,10 +89,7 @@ void Object::setData(int type, void* data) {
 
 Environment::Environment() : state(0), variables(), scopeLevel(0) {
   //"STATE" pseudo-variable
-  int* val = new int[2];
-  val[0] = 0;
-  val[1] = 0;
-  state_ = Object(DATATYPE_STATE, val);
+  state_ = Object(DATATYPE_STATE, new vector<int>());
   variables.emplace(); //add first level of scope
   //auto-variables
   constants["I"] = createObject(QuantumGate::I);
@@ -170,16 +167,21 @@ Object Environment::applyGate(Object gate, Object state, const vector<int>& qubi
 }
 
 Object Environment::createObject(const QuantumState& state) {
+std::cout << "1" << std::endl;
   //will actually be a sub-state of the entire state
   int n = this->state.getN();
   int m = n + state.getN();
+std::cout << "2" << std::endl;
   this->state.tensor_(state);
+std::cout << "3" << std::endl;
   vector<int>* val = new vector<int>();
   vector<int>& val2 = state_.castData<vector<int>>();
+std::cout << "4" << std::endl;
   for(int i = n; i < m; i++) {
     val->push_back(i);
     val2.push_back(i);
   }
+std::cout << "5" << std::endl;
   return Object(DATATYPE_STATE, val);
 }
 
