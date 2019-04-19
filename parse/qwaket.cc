@@ -12,8 +12,8 @@ using namespace std;
 TODO:
 -commands
 --!env: print all variables in environment
---!func: print all functions in program
--expr: state substate a[...]
+--!clear: reset environment
+--!del <var>: delete variable
 */
 
 typedef int (*CMD)(QwakParser&, Program&, Environment&, const string&);
@@ -62,6 +62,20 @@ int cmd_state(QwakParser& parser, Program& p, Environment& e, const string& args
   return 0;
 }
 
+int cmd_func(QwakParser& parser, Program& p, Environment& e, const string& args) {
+  cout << "Functions: " << endl;
+  for(Function* f : p.getFunctions()) {
+    cout << " " << f->getName() << "(";
+    auto args = f->getArgs();
+    for(auto i = 0; i < args.size(); i++) {
+      if(i) cout << ", ";
+      cout << args[i];
+    }
+    cout << ")" << endl;
+  }
+  return 0;
+}
+
 int main() {
 
   QwakParser parser;
@@ -79,6 +93,7 @@ int main() {
   commands["motd"] = &cmd_motd;
   commands["load"] = &cmd_load;
   commands["state"] = &cmd_state;
+  commands["func"] = &cmd_func;
 
   while(true) {
     cout << ">>";
@@ -91,6 +106,15 @@ int main() {
       string cmd = input.substr(1, pos - 1);
       string arg = (pos == string::npos) ? "" : input.substr(pos + 1, string::npos);
       if(cmd == "quit") break;
+      if(cmd == "help") {
+        cout << "Commands:" << endl;
+        cout << " !help" << endl;
+        cout << " !quit" << endl;
+        for(auto pair : commands) {
+          cout << " !" << pair.first << endl;
+        }
+        continue;
+      }
 
       if(commands.find(cmd) != commands.end()) {
         int result = commands[cmd](parser, p, e, arg);

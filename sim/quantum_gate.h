@@ -59,7 +59,7 @@ public:
   static const QuantumGate Z;
   static QuantumGate R(int);
   static QuantumGate control(const QuantumGate&);
-  static QuantumGate swap(vector<int>& indices);
+  static QuantumGate swap(const vector<int>& indices);
   
   friend std::ostream& ::operator<<(std::ostream& o, const QuantumGate& qg);
 

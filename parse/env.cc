@@ -160,28 +160,23 @@ Object Environment::applyGate(Object gate, Object state, const vector<int>& qubi
   QuantumGate& gate2 = gate.castData<QuantumGate>();
   vector<int>& val = state.castData<vector<int>>();
   vector<int> qubits3;
-  for(int i = 0; i < qubits.size(); i++) qubits3.push_back(val[qubits[i]]);
+  for(int i = qubits.size() - 1; i >= 0; i--) qubits3.push_back(val[qubits[i]]);
 
   this->state.applyPartial_(gate2, qubits3);
   return state;
 }
 
 Object Environment::createObject(const QuantumState& state) {
-std::cout << "1" << std::endl;
   //will actually be a sub-state of the entire state
   int n = this->state.getN();
   int m = n + state.getN();
-std::cout << "2" << std::endl;
   this->state.tensor_(state);
-std::cout << "3" << std::endl;
   vector<int>* val = new vector<int>();
   vector<int>& val2 = state_.castData<vector<int>>();
-std::cout << "4" << std::endl;
   for(int i = n; i < m; i++) {
     val->push_back(i);
     val2.push_back(i);
   }
-std::cout << "5" << std::endl;
   return Object(DATATYPE_STATE, val);
 }
 

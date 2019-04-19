@@ -201,6 +201,42 @@ public:
   }
 };
 
+class ExpressionTypeSubstateAST : public ExpressionType {
+  string name;
+  vector<int> qubits;
+public:
+  virtual bool parse(TokenStream& tokens) override {
+    Token tmp;
+    int pos = tokens.getPos();
+    if(tokens(TOKEN_TYPE_IDENTIFIER, &tmp) && tokens(TOKEN_TYPE_BRACKET_LEFT)) {
+      name = tmp.getValue();
+      vector<string> qubitsTmp;
+      parseSeparated(tokens, TOKEN_TYPE_LITERAL, TOKEN_TYPE_COMMA, qubitsTmp);
+      if(TOKEN_TYPE_BRACKET_RIGHT) {
+        for(const string& s : qubitsTmp) qubits.push_back(std::stoi(s));
+        return true;
+      } else {
+        throw ParserError("Invalid bracket sequence after identifier", tokens.getPos());
+      }
+      return true;
+    }
+    tokens.setPos(pos);
+    return false;
+  }
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    Object o = e[name];
+    if(o.getType() == DATATYPE_STATE) {
+      vector<int>& qubits_ = o.castData<vector<int>>();
+      vector<int>* newQubits = new vector<int>();
+      for(int qubit : qubits) newQubits->push_back(qubits_[qubit]);
+      return Object(DATATYPE_STATE, newQubits);
+    } else {
+      return OBJECT_NONE; //ehhh
+    }
+  }
+};
+
 //literal or variable
 //literal = <decimal number> or |<binary number>>
 //variable = <identifier>
@@ -222,13 +258,20 @@ public:
       } else {
         delete expression;
         tokens.setPos(pos);
-        expression = new ExpressionTypeIdentifierAST();
+        expression = new ExpressionTypeSubstateAST();
         if(expression->parse(tokens)) {
           return true;
         } else {
           delete expression;
           tokens.setPos(pos);
-          return false;
+          expression = new ExpressionTypeIdentifierAST();
+          if(expression->parse(tokens)) {
+            return true;
+          } else {
+            delete expression;
+            tokens.setPos(pos);
+            return false;
+          }
         }
       }
     }
@@ -699,11 +742,77 @@ vector<string> args;
 public:
   FunctionBuiltin(string name_, std::initializer_list<string> args_) : name(name_), args(args_) {}
 
-  const string getName() { return name; }
-  const vector<string>& getArgs() { return args; }
+  const string getName() const override { return name; }
+  const vector<string>& getArgs() const override { return args; }
 };
 
 //TODO: built-in function subclasses
+//control
+//R_k
+//swap
+//measure
+//dim
+
+class FunctionBuiltinControl : public FunctionBuiltin {
+public:
+  FunctionBuiltinControl() : FunctionBuiltin("control", {"U"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    if(substate.size()) {
+      //place control in a specific place (TODO)
+      return OBJECT_NONE;
+    }
+    return e.createObject(QuantumGate::control(e["U"].castData<QuantumGate>()));
+  }
+};
+
+class FunctionBuiltinRk : public FunctionBuiltin {
+public:
+  FunctionBuiltinRk() : FunctionBuiltin("R", {"k"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    return e.createObject(QuantumGate::R(e["k"].castData<int>()));
+  }
+};
+
+class FunctionBuiltinSwap : public FunctionBuiltin {
+public:
+  FunctionBuiltinSwap() : FunctionBuiltin("swap", {}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    return e.createObject(QuantumGate::swap(substate));
+  }
+};
+
+class FunctionBuiltinMeasure : public FunctionBuiltin {
+public:
+  FunctionBuiltinMeasure() : FunctionBuiltin("measure", {"x"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    QuantumState& q = e.getState();
+    vector<int>& qubits = e["x"].castData<vector<int>>();
+    vector<int> measured;
+    if(substate.size()) for(int qubit : substate) measured.push_back(qubits[qubit]);
+    else measured = qubits;
+    int choice;
+    q.measure_(measured, &choice);
+    return e.createObject(choice);
+  }
+};
+
+class FunctionBuiltinDim : public FunctionBuiltin {
+public:
+  FunctionBuiltinDim() : FunctionBuiltin("dim", {"x"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    Object o = e["x"];
+    switch(o.getType()) {
+      case Qwak::DATATYPE_STATE:
+        return e.createObject(o.castData<vector<int>>().size());
+      case Qwak::DATATYPE_GATE:
+        return e.createObject(o.castData<Qwality::QuantumGate>().getN());
+      case Qwak::DATATYPE_INT:
+        return e.createObject(1);
+      default:
+        return OBJECT_NONE;
+    }
+  }
+};
 
 //public API stuff
 
@@ -730,12 +839,11 @@ const vector<Function*>& Program::getFunctions() const {
 }
 
 void Program::addBuiltinFunctions() {
-//TODO
-//control
-//R_k
-//swap
-//measure
-//dim
+  addFunction(new FunctionBuiltinControl());
+  addFunction(new FunctionBuiltinRk());
+  addFunction(new FunctionBuiltinSwap());
+  addFunction(new FunctionBuiltinMeasure());
+  addFunction(new FunctionBuiltinDim());
 }
 
 QwakParser::QwakParser() : version_("v1.0.0") {

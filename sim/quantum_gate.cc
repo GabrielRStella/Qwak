@@ -86,7 +86,7 @@ QuantumGate QuantumGate::control(const QuantumGate& gate) {
     return result;
 }
 
-QuantumGate QuantumGate::swap(vector<int>& indices) {
+QuantumGate QuantumGate::swap(const vector<int>& indices) {
     int n = indices.size();
     matrix mat(1<<n,1<<n);
 
@@ -97,7 +97,7 @@ QuantumGate QuantumGate::swap(vector<int>& indices) {
         // specified in indices.
         int j = 0;
         for(int k = 0; k < n; ++k) {
-            j |= ((i >> indices[k]) & 1) << k;
+            j |= ((i >> indices.at(k)) & 1) << k;
         }
         mat(j,i) = 1;
     }
