@@ -43,9 +43,11 @@ class QwakParser {
 private:
   vector<TokenRule*> tokenRules;
   vector<std::string> messages;
+  std::string version_;
 public:
   QwakParser();
 
+  const std::string& version();
   //message of the day
   const std::string& motd();
 

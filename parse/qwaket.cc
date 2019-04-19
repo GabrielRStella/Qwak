@@ -1,67 +1,88 @@
 #include "qwak.h"
 
 #include <iostream>
+#include <unordered_map>
 
 using namespace Qwak;
 
-/*
-TODO:
-*/
-
 using namespace std;
 
-void execute(QwakParser& parser, Program& p, Environment& e, const std::string& stmt) {
-  Object o = parser.execute(stmt, p, e);
+/*
+TODO:
+-commands
+--!load: load a .qwak file
+--!env: print all variables in environment
+--!func: print all functions in program
+-?
+*/
 
-  cout << "Executed statement: \"" << stmt << "\"" << endl;
+typedef int (*CMD)(QwakParser&, Program&, Environment&, const string&);
 
-  cout << "Result: " << o << endl;
+int cmd_motd(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+  cout << "MOTD: " << parser.motd() << endl;
+  return 0;
+}
+
+int cmd_load(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+  cout << "Loading \"" << args << "\"..." << endl;
+  return -1;
+}
+
+int cmd_state(QwakParser& parser, Program& p, Environment& e, const std::string& args) {
+  cout << "State: " << e.getState() << endl;
+  return 0;
 }
 
 int main() {
 
   QwakParser parser;
 
-  cout << "Created parser..." << endl;
-
   Program* pr = parser.createEmptyProgram();
   Program& p = *pr;
 
-  cout << "Created program..." << endl;
-
   Environment e;
 
-  cout << "Created environment..." << endl << endl;
+  cout << "Environment created! Running QWAK " << parser.version() << ": \"" << parser.motd() << "\"" << endl;
 
-  execute(parser, p, e, "l = H");
-  cout << endl;
-  execute(parser, p, e, "l");
-  cout << endl;
+  unordered_map<std::string, CMD> commands;
+  commands["motd"] = &cmd_motd;
+  commands["load"] = &cmd_load;
+  commands["state"] = &cmd_state;
 
-  cout << "State: " << e.getState() << endl << endl;
+  while(true) {
+    cout << ">>";
+    string input;
+    getline(cin, input);
 
-  execute(parser, p, e, "a=|0>");
-  cout << endl;
+    if(input[0] == '!') {
+      //a special command
+      size_t pos = input.find(' ');
+      string cmd = input.substr(1, pos - 1);
+      string arg = (pos == string::npos) ? "" : input.substr(pos + 1, string::npos);
+      if(cmd == "quit") break;
 
-  cout << "State: " << e.getState() << endl << endl;
-
-  execute(parser, p, e, "b=|0>");
-  cout << endl;
-
-  cout << "State: " << e.getState() << endl << endl;
-
-  execute(parser, p, e, "l(a)");
-
-  cout << "State: " << e.getState() << endl << endl;
-
-  execute(parser, p, e, "H(a)");
-
-  cout << "State: " << e.getState() << endl << endl;
-
-  execute(parser, p, e, "H(a)");
-  execute(parser, p, e, "H(b)");
-
-  cout << "State: " << e.getState() << endl << endl;
+      if(commands.find(cmd) != commands.end()) {
+        int result = commands[cmd](parser, p, e, arg);
+        //0 means success, but don't print
+        if(result == 1) {
+          cout << "Command successful." << endl;
+        } else if(result == -1) {
+          cout << "Command unsuccessful." << endl;
+        }
+      } else {
+        cout << "Invalid command." << endl;
+      }
+    } else {
+      //a statement
+      try {
+        cout << "Result: " << parser.execute(input, p, e) << endl;
+      } catch(const QwakError& e) {
+        cout << "Execution failed: " << e.what() << endl;
+      } catch(...) {
+        cout << "Execution failed." << endl;
+      }
+    }
+  }
 
   cout << endl << "Bye!" << endl;
 

@@ -35,4 +35,4 @@ qwak.a: env.o parse.o qwak.o
 	ar rcs $@ $^
 
 clean:
-	rm -f *.o qwak.a tests
+	rm -f *.o qwak.a tests qwaket

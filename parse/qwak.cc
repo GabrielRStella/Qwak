@@ -702,7 +702,7 @@ const vector<Function*>& Program::getFunctions() const {
   return functions;
 }
 
-QwakParser::QwakParser() {
+QwakParser::QwakParser() : version_("v1.0.0") {
   //TODO: add a bunch of token rules
 
   tokenRules.push_back(new TokenRuleWhitespace());
@@ -721,15 +721,16 @@ QwakParser::QwakParser() {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_COMMA, ","));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_DOTS, ".."));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PIPE, "|"));
-  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_ASSIGN, "="));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_EQUALS, "=="));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_ASSIGN, "="));
 
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PLUS, "+"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_MINUS, "-"));
-  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_CONCAT, "^"));
+  //rules must be in longest-prefix order...
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_TENSOR_EXPONENT, "^**"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_EXPONENT, "**"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_TENSOR, "^*"));
-  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_TENSOR_EXPONENT, "^**"));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_CONCAT, "^"));
 
   //keywords
 
@@ -756,6 +757,10 @@ QwakParser::QwakParser() {
     pos = pos2 + 1;
   } while(pos2 < std::string::npos);
   srand((unsigned)time(0));
+}
+
+const std::string& QwakParser::version() {
+  return version_;
 }
 
 //message of the day
