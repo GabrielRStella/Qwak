@@ -23,7 +23,6 @@ int main() {
   QwakParser parser;
 
   cout << "Created parser..." << endl;
-  cout << "MOTD: " << parser.motd() << endl;
 
   Program* pr = parser.createEmptyProgram();
   Program& p = *pr;

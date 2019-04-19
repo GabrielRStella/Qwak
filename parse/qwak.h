@@ -42,8 +42,12 @@ public:
 class QwakParser {
 private:
   vector<TokenRule*> tokenRules;
+  vector<std::string> messages;
 public:
   QwakParser();
+
+  //message of the day
+  const std::string& motd();
 
   Program* createEmptyProgram();
 

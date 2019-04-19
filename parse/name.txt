@@ -1,4 +1,4 @@
-#Any line not starting with a Q gets ignored
+R"=====(#Any line not starting with a Q gets ignored
 #- Walking Away -
 #- Warns About -
 #- - - Kewl
@@ -29,4 +29,4 @@ Qwak Worships All Kardashians
 Quick With A Kaboom
 Quesadillas With A Kick
 Q Words Aren't Kommon
-Quantum Works Against Karma
+Quantum Works Against Karma)====="

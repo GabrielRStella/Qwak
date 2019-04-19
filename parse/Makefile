@@ -13,21 +13,26 @@ LDFLAGS += -lcln -lginac
 #Run "make test" to do the above, then run the tests
 #############################################################
 
-all: qwak.a tests
+all: qwak.a tests qwaket
 
 test: tests
 	./tests
 
 tests: tests.o qwak.a
+	(cd ../sim && make)
 	$(CXX) $^ ../sim/quantum_simulator.a $(LDFLAGS) -o $@
+	(cd ../sim && make clean)
+
+qwaket: qwaket.o qwak.a
+	(cd ../sim && make)
+	$(CXX) $^ ../sim/quantum_simulator.a $(LDFLAGS) -o $@
+	(cd ../sim && make clean)
 
 #Generates a static library
 #https://stackoverflow.com/a/32168987
 #Consider using a .so (runtime library)?
 qwak.a: env.o parse.o qwak.o
-	(cd ../sim && make)
 	ar rcs $@ $^
-	#(cd ../sim && make clean)
 
 clean:
 	rm -f *.o qwak.a tests

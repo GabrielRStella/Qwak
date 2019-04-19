@@ -1,7 +1,8 @@
 #include "qwak.h"
 
-//tmp stuff
-#include <cstdio>
+//https://stackoverflow.com/q/13445688
+#include <cstdlib>
+#include <ctime>
 
 namespace Qwak {
 
@@ -739,6 +740,29 @@ QwakParser::QwakParser() {
 
   tokenRules.push_back(new TokenRuleNumeric(true, TOKEN_TYPE_LITERAL));
   tokenRules.push_back(new TokenRuleAlphabetic(true, TOKEN_TYPE_IDENTIFIER));
+
+  //message of the day :^)
+  //https://stackoverflow.com/a/25021520
+  const char *s =
+#include "name.txt"
+  ;
+  std::string s2(s);
+  std::size_t pos = 0;
+  std::size_t pos2 = 0;
+  do {
+    pos2 = s2.find('\n', pos);
+    std::string sub = s2.substr(pos, pos2 - pos);
+    if(sub[0] == 'Q' || sub[0] == 'q') messages.push_back(sub);
+    pos = pos2 + 1;
+  } while(pos2 < std::string::npos);
+  srand((unsigned)time(0));
+}
+
+//message of the day
+const std::string& QwakParser::motd() {
+  //generate random pos
+  int pos = rand() % messages.size();
+  return messages[pos];
 }
 
 Program* QwakParser::createEmptyProgram() {
