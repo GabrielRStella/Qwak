@@ -130,7 +130,7 @@ int main() {
     } else {
       //a statement
       try {
-        cout << "Result: " << parser.execute(input, p, e) << endl;
+        cout << "Result: " << parser.execute(input + ";", p, e) << endl;
       } catch(const QwakError& e) {
         cout << "Execution failed: " << e.what() << endl;
       } catch(...) {

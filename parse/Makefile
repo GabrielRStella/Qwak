@@ -21,12 +21,12 @@ test: tests
 tests: tests.o qwak.a
 	(cd ../sim && make)
 	$(CXX) $^ ../sim/quantum_simulator.a $(LDFLAGS) -o $@
-	(cd ../sim && make clean)
+	#(cd ../sim && make clean)
 
 qwaket: qwaket.o qwak.a
 	(cd ../sim && make)
 	$(CXX) $^ ../sim/quantum_simulator.a $(LDFLAGS) -o $@
-	(cd ../sim && make clean)
+	#(cd ../sim && make clean)
 
 #Generates a static library
 #https://stackoverflow.com/a/32168987

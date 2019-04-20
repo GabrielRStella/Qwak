@@ -31,6 +31,7 @@ const int TOKEN_TYPE_DOTS = 111; // .. for ranges
 const int TOKEN_TYPE_PIPE = 112; // |
 const int TOKEN_TYPE_ASSIGN = 113; // =
 const int TOKEN_TYPE_EQUALS = 114; // ==
+const int TOKEN_TYPE_SEMICOLON = 115;
 //ops
 const int TOKEN_TYPE_PLUS = 120;
 const int TOKEN_TYPE_MINUS = 121;
@@ -212,7 +213,7 @@ public:
       name = tmp.getValue();
       vector<string> qubitsTmp;
       parseSeparated(tokens, TOKEN_TYPE_LITERAL, TOKEN_TYPE_COMMA, qubitsTmp);
-      if(TOKEN_TYPE_BRACKET_RIGHT) {
+      if(tokens(TOKEN_TYPE_BRACKET_RIGHT)) {
         for(const string& s : qubitsTmp) qubits.push_back(std::stoi(s));
         return true;
       } else {
@@ -445,7 +446,7 @@ public:
       if(tokens(TOKEN_TYPE_BRACKET_LEFT)) {
         vector<string> qubitsTmp;
         parseSeparated(tokens, TOKEN_TYPE_LITERAL, TOKEN_TYPE_COMMA, qubitsTmp);
-        if(TOKEN_TYPE_BRACKET_RIGHT) {
+        if(tokens(TOKEN_TYPE_BRACKET_RIGHT)) {
           for(const string& s : qubitsTmp) qubits.push_back(std::stoi(s));
           return true;
         } else {
@@ -539,6 +540,7 @@ public:
     if(expression) {
       return expression->evaluate(e, p);
     }
+    return OBJECT_NONE;
   }
 };
 
@@ -567,7 +569,7 @@ public:
       tokens.setPos(pos);
     }
     //value part
-    if(expr.parse(tokens)) {
+    if(expr.parse(tokens) && tokens(TOKEN_TYPE_SEMICOLON)) {
       return true;
     } else {
       tokens.setPos(pos);
@@ -867,6 +869,7 @@ QwakParser::QwakParser() : version_("v1.0.0") {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PIPE, "|"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_EQUALS, "=="));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_ASSIGN, "="));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_SEMICOLON, ";"));
 
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_PLUS, "+"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_MINUS, "-"));

@@ -1,3 +1,13 @@
+
+function Bell() {
+  s = |00>;
+  cx = control(X);
+  H(s)[0];
+  cx(s);
+  return s
+}
+
 function KetPlus() {
-  return H(|0>)
+  x = |0>;
+  return H(x)
 }
