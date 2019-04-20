@@ -175,12 +175,47 @@ QuantumState QuantumState::measure(const vector<int>& qubits, int* choice) const
     idx++;
   }
 
-  *choice = theChoice;
+  *choice = flip_bit_order(theChoice, n);
   return tmp;
 }
 
 void QuantumState::measure_(const vector<int>& qubits, int* choice) {
   amplitudes = measure(qubits, choice).amplitudes; //ez
+}
+
+QuantumState QuantumState::zero(int qubit) const {
+  QWALITY_NOT_SUPPORTED
+}
+
+void QuantumState::zero_(int qubit) {
+  amplitudes = zero(qubit).amplitudes; //ez
+}
+
+QuantumState QuantumState::zero(const vector<int>& qubits) const {
+
+  int mask = 0; //all bits on
+  for(int qubit : qubits) mask |= QuantumState::maskQubitOn(n - qubit - 1);
+  mask = ~mask; //bitwise not, to erase all given qubits
+
+  vector<ex> probabilities;
+  getProbabilities(probabilities);
+
+  //fill in probabilities
+  matrix amps = matrix(dim, 1); //all zero
+  for(int state = 0; state < dim; state++) {
+    int state2 = state & mask;
+    amps(state2, 0) += probabilities[state];
+  }
+  //convert to amplitudes
+  for(int state = 0; state < dim; state++) {
+    if(!amps(state, 0).is_zero()) amps(state, 0) = sqrt(amps(state, 0));
+  }
+
+  return QuantumState(n, amps);
+}
+
+void QuantumState::zero_(const vector<int>& qubits) {
+  amplitudes = zero(qubits).amplitudes; //ez
 }
 
 void QuantumState::reset() {

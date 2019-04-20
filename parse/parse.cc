@@ -18,27 +18,29 @@ bool TokenRule::keepToken() {
   return keepToken_;
 }
 
-TokenRuleRegex::TokenRuleRegex(bool keepToken__, int tokenType_, regex pattern_) : TokenRule(keepToken__, tokenType_), pattern(pattern_) {}
+TokenRuleClass::TokenRuleClass(bool keepToken__, int tokenType_, const string& chars_) : TokenRule(keepToken__, tokenType_), chars(chars_) {}
 
-//TODO JB
-int TokenRuleRegex::apply(const string& buffer, int begin, Token* fill) {
-  /*
-    calling convention: (applies to TokenRuleExact also)
-    "begin" tells you where to start looking for a match in the given buffer
-    if the match is successful, "fill" should be assigned to a token with the matched text,
-    and the return value is the position after the end of this token
-    (i.e. where the next token will begin)
-    if unsuccessful, "fill" will be ignored, and return == begin.
-  */
-
-  //example
-  *fill = Token(tokenType, "test");
+int TokenRuleClass::apply(const string& buffer, int begin, Token* fill) {
+  int end = begin;
+  while(chars.find(buffer[end]) != string::npos) end++;
+  *fill = Token(tokenType, buffer.substr(begin, end - begin));
+  return end;
 }
+
+TokenRuleAlphabetic::TokenRuleAlphabetic(bool keepToken__, int tokenType_) : TokenRuleClass(keepToken__, tokenType_, "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ") {}
+
+TokenRuleNumeric::TokenRuleNumeric(bool keepToken__, int tokenType_) : TokenRuleClass(keepToken__, tokenType_, "0123456789") {}
 
 TokenRuleExact::TokenRuleExact(bool keepToken__, int tokenType_, string match_) : TokenRule(keepToken__, tokenType_), match(match_) {}
 
-//TODO JB
 int TokenRuleExact::apply(const string& buffer, int begin, Token* fill) {
+  std::size_t len = match.size();
+  if(buffer.size() - begin < len) return begin;
+  if(buffer.substr(begin, len) == match) {
+    *fill = Token(tokenType, match);
+    return begin + len;
+  }
+  return begin;
 }
 
 TokenRuleWhitespace::TokenRuleWhitespace() : TokenRule(false, TOKEN_TYPE_WHITESPACE) {}
@@ -60,6 +62,11 @@ void TokenStream::addRule(TokenRule* rule) {
   hasTokenized = false;
 }
 
+void TokenStream::addRules(const vector<TokenRule*> rules) {
+  for(TokenRule* rule : rules) this->rules.push_back(rule);
+  hasTokenized = false;
+}
+
 void TokenStream::tokenize() {
   tokens.clear();
 
@@ -71,7 +78,7 @@ void TokenStream::tokenize() {
     for(auto rule : rules) {
       newPos = rule->apply(buffer, pos, &tmp);
       if(newPos != pos) {
-        tokens.push_back(tmp);
+        if(rule->keepToken()) tokens.push_back(tmp);
         break;
       }
     }
@@ -79,6 +86,7 @@ void TokenStream::tokenize() {
       //was unable to match any token
       throw TokenizerError("Unable to tokenize input", pos);
     }
+    pos = newPos;
   }
 
   hasTokenized = true;
@@ -106,6 +114,8 @@ void TokenStream::operator++(int) { //postfix
 }
 
 bool TokenStream::operator()(int tokenType, Token* t) {
+  if(!(*this)) return false; //check for more tokens
+
   Token& tmp = tokens[curPos];
   if(tmp.getType() == tokenType) {
     if(t) *t = tmp;

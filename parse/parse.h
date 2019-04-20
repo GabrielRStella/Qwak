@@ -62,6 +62,14 @@ public:
 
   //if return != begin, the rule is considered to have worked
   //return = the point to begin parsing the next token
+  /*
+    calling convention:
+    "begin" tells you where to start looking for a match in the given buffer
+    if the match is successful, "fill" should be assigned to a token with the matched text,
+    and the return value is the position after the end of this token
+    (i.e. where the next token will begin)
+    if unsuccessful, "fill" will be ignored, and return == begin.
+  */
   virtual int apply(const string& buffer, int begin, Token* fill) = 0;
 
   //if the token should be kept; for example,
@@ -70,14 +78,27 @@ public:
   bool keepToken();
 };
 
-class TokenRuleRegex : public TokenRule {
+class TokenRuleClass : public TokenRule {
 private:
-  regex pattern;
-
+  string chars;
 public:
-  TokenRuleRegex(bool keepToken__, int tokenType, regex pattern);
+  TokenRuleClass(bool keepToken__, int tokenType, const string& chars);
 
   virtual int apply(const string& buffer, int begin, Token* fill) override;
+};
+
+class TokenRuleAlphabetic : public TokenRuleClass {
+private:
+
+public:
+  TokenRuleAlphabetic(bool keepToken__, int tokenType);
+};
+
+class TokenRuleNumeric : public TokenRuleClass {
+private:
+
+public:
+  TokenRuleNumeric(bool keepToken__, int tokenType);
 };
 
 class TokenRuleExact : public TokenRule {
@@ -116,6 +137,7 @@ public:
 
   //adds another token rule. the new rule will be lower priority than the previous rules.
   void addRule(TokenRule* tokenRule);
+  void addRules(const vector<TokenRule*> rules);
 
   //check if there is another token to extract
   //i.e., if the next *dereference will succeed

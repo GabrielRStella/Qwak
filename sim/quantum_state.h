@@ -74,6 +74,11 @@ public:
   QuantumState measure(const vector<int>& qubits, int* choice = nullptr) const;
   void measure_(const vector<int>& qubits, int* choice = nullptr);
 
+  QuantumState zero(int qubit) const;
+  void zero_(int qubit);
+  QuantumState zero(const vector<int>& qubits) const;
+  void zero_(const vector<int>& qubits);
+
   //resets state to |0^n>
   void reset();
 

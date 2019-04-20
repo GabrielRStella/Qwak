@@ -40,6 +40,9 @@ public:
   QuantumGate tensor(const QuantumGate& other) const;
   void tensor_(const QuantumGate& other);
 
+  QuantumGate tensor(int n) const;
+  void tensor_(int n);
+
   //concatenates two operations
   QuantumGate andThen(const QuantumGate& next) const;
   void andThen_(const QuantumGate& next);
@@ -59,7 +62,8 @@ public:
   static const QuantumGate Z;
   static QuantumGate R(int);
   static QuantumGate control(const QuantumGate&);
-  static QuantumGate swap(vector<int>& indices);
+  static QuantumGate kcontrol(const QuantumGate&, int);
+  static QuantumGate swap(const vector<int>& indices);
   
   friend std::ostream& ::operator<<(std::ostream& o, const QuantumGate& qg);
 
