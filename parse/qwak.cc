@@ -4,9 +4,13 @@
 #include <cstdlib>
 #include <ctime>
 
+#include <ginac/ginac.h>
+
 //TODO: |0^n> (currently only supports |binary> without ^tensor)
 
 #include <initializer_list>
+
+#include "../sim/util.h"
 
 namespace Qwak {
 
@@ -798,6 +802,21 @@ public:
   }
 };
 
+//TODO
+class FunctionBuiltinZero : public FunctionBuiltin {
+public:
+  FunctionBuiltinZero() : FunctionBuiltin("zero", {"x"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    QuantumState& q = e.getState();
+    vector<int>& qubits = e["x"].castData<vector<int>>();
+    vector<int> measured;
+    if(substate.size()) for(int qubit : substate) measured.push_back(qubits[qubit]);
+    else measured = qubits;
+    q.zero_(measured);
+    return Object(DATATYPE_STATE, new vector<int>(measured));
+  }
+};
+
 class FunctionBuiltinDim : public FunctionBuiltin {
 public:
   FunctionBuiltinDim() : FunctionBuiltin("dim", {"x"}) {}
@@ -813,6 +832,31 @@ public:
       default:
         return OBJECT_NONE;
     }
+  }
+};
+
+class FunctionBuiltinControlK : public FunctionBuiltin {
+public:
+  FunctionBuiltinControlK() : FunctionBuiltin("kcontrol", {"U", "m"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    QuantumGate& gate = e["U"].castData<QuantumGate>();
+    int m = e["m"].castData<int>();
+    return e.createObject(QuantumGate::kcontrol(gate, m));
+  }
+};
+
+//creates a unitary with a different complex eigenvalue for each eigenvector (eigenvectors are computational basis states)
+class FunctionBuiltinPhaser : public FunctionBuiltin {
+public:
+  FunctionBuiltinPhaser() : FunctionBuiltin("phaser", {"n"}) {}
+  Object execute(Environment& e, Program& p, const vector<int>& substate) const override {
+    int n = e["n"].castData<int>();
+    QuantumGate ret(n);
+    auto& vals = ret.getValues();
+    for(int i = 0; i < (1<<n); i++) {
+      vals(i, i) = GiNaC::pow(GiNaC::Euler,2*(GiNaC::Pi)*(GiNaC::I)*Qwality::get_random_number());
+    }
+    return e.createObject(ret);
   }
 };
 
@@ -845,7 +889,11 @@ void Program::addBuiltinFunctions() {
   addFunction(new FunctionBuiltinRk());
   addFunction(new FunctionBuiltinSwap());
   addFunction(new FunctionBuiltinMeasure());
+  addFunction(new FunctionBuiltinZero());
   addFunction(new FunctionBuiltinDim());
+  addFunction(new FunctionBuiltinControlK());
+  //misc things for testing
+  addFunction(new FunctionBuiltinPhaser());
 }
 
 QwakParser::QwakParser() : version_("v1.0.0") {

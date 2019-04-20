@@ -17,9 +17,8 @@ Object operator_minus(Environment& e, Object left, Object right) {
 Object operator_tensor_exponent_gate(Environment& e, Object left, Object right) {
   QuantumGate& g1 = left.castData<QuantumGate>();
   int j = right.castData<int>();
-  QuantumGate* g2 = new QuantumGate(0);
-
-  for(int i = 0; i < j; i++) g2->tensor_(g1);
+  QuantumGate* g2 = new QuantumGate(g1);
+  g2->tensor_(j);
 
   return Object(DATATYPE_GATE, g2);
 }
@@ -130,7 +129,7 @@ void Environment::getVariables(vector<string>& obj) {
 }
 
 void Environment::reset() {
-  state = QuantumState();
+  state = QuantumState(0);
   state_ = Object(DATATYPE_STATE, new vector<int>());
   variables = std::stack<unordered_map<string, Object>>();
   variables.emplace();

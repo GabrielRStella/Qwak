@@ -1,4 +1,3 @@
-
 function Bell() {
   s = |00>;
   cx = control(X);

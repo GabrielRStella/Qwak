@@ -3,7 +3,7 @@ CXXFLAGS += -std=c++11
 LDFLAGS += -lcln -lginac
 
 #Make it so we can always call "make <cmd>" and it will run
-.PHONY: clean test
+.PHONY: clean test cleansim sim
 
 #Command to compile C++ executables, eg "prog: a.o b.o":
 #$(CXX) $^ $(LDFLAGS) -o $@
@@ -36,3 +36,9 @@ qwak.a: env.o parse.o qwak.o
 
 clean:
 	rm -f *.o qwak.a tests qwaket
+  
+cleansim:
+	(cd ../sim && make clean)
+  
+sim:
+	(cd ../sim && make)

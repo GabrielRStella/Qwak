@@ -11,7 +11,8 @@ using namespace std;
 /*
 TODO:
 -commands
---!del <var>: delete variable
+-QFT(m) builtin
+-QFT(m) inverse builtin
 */
 
 typedef int (*CMD)(QwakParser&, Program&, Environment&, const string&);

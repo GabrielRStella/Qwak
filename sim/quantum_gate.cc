@@ -36,6 +36,17 @@ void QuantumGate::tensor_(const QuantumGate& other) {
     dim <<= other.n;
 }
 
+QuantumGate QuantumGate::tensor(int n) const {
+  QuantumGate g(0);
+  for(int i = 0; i < n; i++) g.tensor_(*this);
+  return g;
+}
+
+void QuantumGate::tensor_(int n) {
+  QuantumGate g(*this);
+  for(int i = 0; i < n - 1; i++) tensor_(g);
+}
+
 QuantumGate QuantumGate::andThen(const QuantumGate& next) const {
     return QuantumGate(n, next.values.mul(values));
 }
@@ -86,6 +97,19 @@ QuantumGate QuantumGate::control(const QuantumGate& gate) {
     return result;
 }
 
+QuantumGate QuantumGate::kcontrol(const QuantumGate& gate, int m) {
+  QuantumGate pow = gate;
+  QuantumGate total(gate.n + m);
+  for(int qubit = 1; qubit <= m; qubit++) {
+    QuantumGate id_prev = (QuantumGate::I).tensor(qubit - 1);
+    QuantumGate id_post = (QuantumGate::I).tensor(m - qubit);
+
+    total.andThen_(id_prev.tensor(control(id_post.tensor(pow))));
+
+    pow.andThen_(pow); //exponent = power of 2 each time
+  }
+  return total;
+}
 QuantumGate QuantumGate::swap(const vector<int>& indices) {
     int n = indices.size();
     matrix mat(1<<n,1<<n);
