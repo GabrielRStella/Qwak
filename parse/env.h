@@ -82,6 +82,9 @@ public:
   //create or modify variable
   Object& operator[](const string& variable);
 
+  void getVariables(vector<string>& obj);
+  void reset();
+
   //when an Environment gets pushed to a new scope, it keeps the quantum state, but wipes all variables/references
   int getScopeLevel();
   int push(); //returns the scope level before pushing

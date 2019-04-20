@@ -91,7 +91,7 @@ Environment::Environment() : state(0), variables(), scopeLevel(0) {
   //"STATE" pseudo-variable
   state_ = Object(DATATYPE_STATE, new vector<int>());
   variables.emplace(); //add first level of scope
-  //auto-variables
+  //constants
   constants["I"] = createObject(QuantumGate::I);
   constants["H"] = createObject(QuantumGate::H);
   constants["X"] = createObject(QuantumGate::X);
@@ -118,6 +118,23 @@ Object& Environment::operator[](const string& variable) {
   if(variable == "STATE") return state_;
   if(constants.find(variable) != constants.end()) return constants[variable];
   return variables.top()[variable];
+}
+
+void Environment::getVariables(vector<string>& obj) {
+  for(auto pair : constants) {
+    if(pair.second) obj.push_back(pair.first);
+  }
+  for(auto pair : variables.top()) {
+    if(pair.second) obj.push_back(pair.first);
+  }
+}
+
+void Environment::reset() {
+  state = QuantumState();
+  state_ = Object(DATATYPE_STATE, new vector<int>());
+  variables = std::stack<unordered_map<string, Object>>();
+  variables.emplace();
+  scopeLevel = 0;
 }
 
 int Environment::getScopeLevel() {

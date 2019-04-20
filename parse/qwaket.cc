@@ -11,8 +11,6 @@ using namespace std;
 /*
 TODO:
 -commands
---!env: print all variables in environment
---!clear: reset environment
 --!del <var>: delete variable
 */
 
@@ -63,7 +61,7 @@ int cmd_state(QwakParser& parser, Program& p, Environment& e, const string& args
 }
 
 int cmd_func(QwakParser& parser, Program& p, Environment& e, const string& args) {
-  cout << "Functions: " << endl;
+  cout << "Functions:" << endl;
   for(Function* f : p.getFunctions()) {
     cout << " " << f->getName() << "(";
     auto args = f->getArgs();
@@ -74,6 +72,27 @@ int cmd_func(QwakParser& parser, Program& p, Environment& e, const string& args)
     cout << ")" << endl;
   }
   return 0;
+}
+
+int cmd_env(QwakParser& parser, Program& p, Environment& e, const string& args) {
+  cout << "Variables:" << endl;
+  vector<string> vars;
+  e.getVariables(vars);
+  for(string var : vars) cout << " " << var << endl;
+  return 0;
+}
+
+int cmd_clear(QwakParser& parser, Program& p, Environment& e, const string& args) {
+  e.reset();
+  return 1;
+}
+
+int cmd_del(QwakParser& parser, Program& p, Environment& e, const string& args) {
+  Object& o = e[args];
+  if(o) {
+    o = OBJECT_NONE;
+    return 1;
+  } else return -1;
 }
 
 int main() {
@@ -94,6 +113,9 @@ int main() {
   commands["load"] = &cmd_load;
   commands["state"] = &cmd_state;
   commands["func"] = &cmd_func;
+  commands["env"] = &cmd_env;
+  commands["clear"] = &cmd_clear;
+  commands["del"] = &cmd_del;
 
   while(true) {
     cout << ">>";
