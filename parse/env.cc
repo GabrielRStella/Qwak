@@ -150,11 +150,10 @@ Object Environment::applyOperator(const string& op, Object left, Object right) {
 }
 
 Object Environment::applyGate(Object gate, Object state) {
-printf("la\n");
-  QuantumGate& gate2 = gate.castData<QuantumGate>();
   vector<int>& val = state.castData<vector<int>>();
-  this->state.applyPartial_(gate2, val);
-  return state;
+  vector<int> qubits(val.size());
+  for(int i = 0; i < val.size(); i++) qubits[i] = i;
+  return applyGate(gate, state, qubits);
 }
 
 Object Environment::applyGate(Object gate, Object state, const vector<int>& qubits) {
@@ -162,10 +161,8 @@ Object Environment::applyGate(Object gate, Object state, const vector<int>& qubi
   vector<int>& val = state.castData<vector<int>>();
   vector<int> qubits3;
   //qubits have to be inserted in reverse order for some reason...
-printf("lee: %d\n", int(qubits.size()));
   for(int i = qubits.size() - 1; i >= 0; i--) qubits3.push_back(val[qubits[i]]);
 
-printf("le\n");
   this->state.applyPartial_(gate2, qubits3);
   return state;
 }
