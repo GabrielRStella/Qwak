@@ -61,6 +61,12 @@ Object operator_tensor_state(Environment& e, Object left, Object right) {
   return Object(DATATYPE_STATE, s);
 }
 
+Object operator_multiply_gate(Environment& e, Object left, Object right) {
+  QuantumGate& g1 = left.castData<QuantumGate>();
+  QuantumGate& g2 = right.castData<QuantumGate>();
+  return e.createObject(g1.andThen(g2));
+}
+
 //object
 
 Object::Object() : type(DATATYPE_NONE), data(nullptr) {}
@@ -105,6 +111,7 @@ Environment::Environment() : state(0), variables(), scopeLevel(0) {
   operators[string("**")][DATATYPE_INT][DATATYPE_INT] = &operator_exponent_int;
   operators[string("^*")][DATATYPE_GATE][DATATYPE_GATE] = &operator_tensor_gate;
   operators[string("^*")][DATATYPE_STATE][DATATYPE_STATE] = &operator_tensor_state;
+  operators[string("*")][DATATYPE_GATE][DATATYPE_GATE] = &operator_multiply_gate;
   //TODO: equality
   //operators[string("==")][DATATYPE_STATE][DATATYPE_STATE] = &operator_equals_state;
 }

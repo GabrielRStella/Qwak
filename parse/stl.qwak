@@ -10,3 +10,12 @@ function KetPlus() {
   x = |0>;
   return H(x)
 }
+
+function Deutsch(U) {
+  x=|01>;
+  hh = H^*H;
+  hh(x);
+  U(x);
+  hh(x);
+  return measure(x)[0]
+}

@@ -175,7 +175,7 @@ QuantumState QuantumState::measure(const vector<int>& qubits, int* choice) const
     idx++;
   }
 
-  *choice = flip_bit_order(theChoice, n);
+  *choice = flip_bit_order(theChoice, qubits.size());
   return tmp;
 }
 

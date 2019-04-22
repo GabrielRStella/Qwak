@@ -96,6 +96,22 @@ int cmd_del(QwakParser& parser, Program& p, Environment& e, const string& args) 
   } else return -1;
 }
 
+int cmd_deutsch(QwakParser& parser, Program& p, Environment& e, const string& args) {
+  QuantumGate ua = QuantumGate::makeUnitary([](bool x){return false;});
+  QuantumGate ub = QuantumGate::makeUnitary([](bool x){return x;});
+  QuantumGate uc = QuantumGate::makeUnitary([](bool x){return !x;});
+  QuantumGate ud = QuantumGate::makeUnitary([](bool x){return true;});
+  cout << "Creating Deutsch demo unitaries..." << endl;
+  cout << " ua(x) = 0" << endl;
+  cout << " ub(x) = x" << endl;
+  cout << " uc(x) = !x" << endl;
+  cout << " ud(x) = 1" << endl;
+  e["ua"] = e.createObject(ua);
+  e["ub"] = e.createObject(ub);
+  e["uc"] = e.createObject(uc);
+  e["ud"] = e.createObject(ud);
+}
+
 int main() {
 
   QwakParser parser;
@@ -117,6 +133,7 @@ int main() {
   commands["env"] = &cmd_env;
   commands["clear"] = &cmd_clear;
   commands["del"] = &cmd_del;
+  commands["demo"] = &cmd_deutsch;
 
   while(true) {
     cout << ">>";

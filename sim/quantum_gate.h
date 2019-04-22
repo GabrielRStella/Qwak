@@ -64,6 +64,10 @@ public:
   static QuantumGate control(const QuantumGate&);
   static QuantumGate kcontrol(const QuantumGate&, int);
   static QuantumGate swap(const vector<int>& indices);
+  template<typename F>
+  static QuantumGate makeUnitary(F func); //F: {0,1} -> {0,1}
+  template<typename F>
+  static QuantumGate makeUnitary(F func, int n, int m); //F: {0,1}^n -> {0,1}^m
   
   friend std::ostream& ::operator<<(std::ostream& o, const QuantumGate& qg);
 
@@ -71,6 +75,25 @@ public:
 
   //TODO: overload arithmetic operators?
 };
+
+//F: {0,1} -> {0,1}
+template<typename F>
+QuantumGate QuantumGate::makeUnitary(F func) {
+  matrix U_f(4,4);
+  for(int x = 0; x < 2; ++x) {
+    for(int y = 0; y < 2; ++y) {
+      // Generate matrix of the form |x>|y xor f(x)><x|<y|.
+      U_f((x << 1) | (y != func(x)), (x << 1) | y) = 1;
+    }
+  }
+  return QuantumGate(2,U_f);
+}
+
+//F: {0,1}^n -> {0,1}^m
+template<typename F>
+QuantumGate QuantumGate::makeUnitary(F func, int n, int m) {
+  QWALITY_NOT_SUPPORTED
+}
 
 } //end namespace
 

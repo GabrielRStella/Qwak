@@ -13,19 +13,15 @@ bool f_1(bool x) { return x;     }
 bool f_2(bool x) { return !x;    }
 bool f_3(bool x) { return true;  }
 
-QuantumGate makeUnitary(bool (*f)(bool));
-
-QuantumGate Uf0(2,matrix{{},{}});
-
 int main() {
     
     cout << "----- The Deutsch Algorithm -----" << endl;
 
     // Prepare unitary gates.
-    QuantumGate U_f0 = makeUnitary(f_0);
-    QuantumGate U_f1 = makeUnitary(f_1);
-    QuantumGate U_f2 = makeUnitary(f_2);
-    QuantumGate U_f3 = makeUnitary(f_3);
+    QuantumGate U_f0 = QuantumGate::makeUnitary(f_0);
+    QuantumGate U_f1 = QuantumGate::makeUnitary(f_1);
+    QuantumGate U_f2 = QuantumGate::makeUnitary(f_2);
+    QuantumGate U_f3 = QuantumGate::makeUnitary(f_3);
 
     // Display unitary functions.
     cout << "f_0(x) = 0," << endl;
@@ -77,15 +73,4 @@ int main() {
 
     return 0;
 
-}
-
-QuantumGate makeUnitary(bool (*f)(bool)) {
-    matrix U_f(4,4);
-    for(int x = 0; x < 2; ++x) {
-        for(int y = 0; y < 2; ++y) {
-            // Generate matrix of the form |x>|y xor f(x)><x|<y|.
-            U_f((x << 1) | (y != f(x)), (x << 1) | y) = 1;
-        }
-    }
-    return QuantumGate(2,U_f);
 }

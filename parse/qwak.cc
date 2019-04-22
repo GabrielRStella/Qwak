@@ -43,6 +43,7 @@ const int TOKEN_TYPE_CONCAT = 122; // ^ for |0^n> etc
 const int TOKEN_TYPE_EXPONENT = 123; // **
 const int TOKEN_TYPE_TENSOR = 124; // ^*
 const int TOKEN_TYPE_TENSOR_EXPONENT = 125; // ^**
+const int TOKEN_TYPE_MULTIPLY = 126; // *
 //keywords
 const int TOKEN_TYPE_KEYWORD_FUNCTION = 200;
 const int TOKEN_TYPE_KEYWORD_RETURN = 201;
@@ -287,7 +288,7 @@ public:
   }
 };
 
-//expr ** ^* ^**
+//expr ** ^* ^** *
 class ExpressionTypeSecondaryAST : public ExpressionType {
   ExpressionTypePrimaryAST left;
   ExpressionTypePrimaryAST right;
@@ -299,7 +300,7 @@ public:
     if(left.parse(tokens)) {
       pos = tokens.getPos();
       Token opt;
-      if(tokens(TOKEN_TYPE_EXPONENT, &opt) || tokens(TOKEN_TYPE_TENSOR, &opt) || tokens(TOKEN_TYPE_TENSOR_EXPONENT, &opt)) {
+      if(tokens(TOKEN_TYPE_EXPONENT, &opt) || tokens(TOKEN_TYPE_TENSOR, &opt) || tokens(TOKEN_TYPE_TENSOR_EXPONENT, &opt) || tokens(TOKEN_TYPE_MULTIPLY, &opt)) {
         op = opt.getValue();
         if(right.parse(tokens)) {
           hasRight = true;
@@ -798,6 +799,12 @@ public:
     else measured = qubits;
     int choice;
     q.measure_(measured, &choice);
+    //correct measurements to local indices
+    int choice2 = 0;
+    //for(int i = 0; i < measured.size(); i++) {
+    //  choice2
+    //}
+    //return
     return e.createObject(choice);
   }
 };
@@ -926,6 +933,7 @@ QwakParser::QwakParser() : version_("v1.0.0") {
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_EXPONENT, "**"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_TENSOR, "^*"));
   tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_CONCAT, "^"));
+  tokenRules.push_back(new TokenRuleExact(true, TOKEN_TYPE_MULTIPLY, "*"));
 
   //keywords
 
