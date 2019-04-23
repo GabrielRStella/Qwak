@@ -21,11 +21,11 @@ function Deutsch(U) {
 }
 
 function Entangle(n) {
+  x = |0^n>;
+  H(x)[0];
   nn = n - 1;
   xx = X^**nn;
   cx = control(xx);
-  x = |0^n>;
-  H(x)[0];
   cx(x);
   return x
 }
