@@ -19,3 +19,13 @@ function Deutsch(U) {
   hh(x);
   return measure(x)[0]
 }
+
+function Entangle(n) {
+  x = |0^n>;
+  H(x)[0];
+  nn = n - 1;
+  xx = X^**nn;
+  cx = control(xx);
+  cx(x);
+  return x
+}

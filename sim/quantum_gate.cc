@@ -44,7 +44,8 @@ QuantumGate QuantumGate::tensor(int n) const {
 
 void QuantumGate::tensor_(int n) {
   QuantumGate g(*this);
-  for(int i = 0; i < n - 1; i++) tensor_(g);
+  *this = QuantumGate(0);
+  for(int i = 0; i < n; i++) tensor_(g);
 }
 
 QuantumGate QuantumGate::andThen(const QuantumGate& next) const {

@@ -152,23 +152,60 @@ public:
   virtual Object evaluate(Environment& e, Program& p) const = 0;
 };
 
+
+
+//literal or variable
+//literal = <decimal number> or |<binary number>>
+//variable = <identifier>
+class ExpressionTypePrimaryAST : public ExpressionType {
+  ExpressionType* expression;
+public:
+  virtual bool parse(TokenStream& tokens) override;
+
+  virtual Object evaluate(Environment& e, Program& p) const override {
+    return expression ? expression->evaluate(e, p) : OBJECT_NONE;
+  }
+};
+
 class ExpressionTypeLiteralStateAST : public ExpressionType {
+  std::string state_;
   int state;
   int n;
+
+  bool hasTensor;
+  ExpressionTypePrimaryAST tensor; //for <string>^<power>
 public:
   virtual bool parse(TokenStream& tokens) override {
     int pos = tokens.getPos();
     Token tmp;
-    if(tokens(TOKEN_TYPE_PIPE) && tokens(TOKEN_TYPE_LITERAL, &tmp) && tokens(TOKEN_TYPE_ANGLE_RIGHT)) {
-      state = std::stoi(tmp.getValue(), nullptr, 2);
+    if(tokens(TOKEN_TYPE_PIPE) && tokens(TOKEN_TYPE_LITERAL, &tmp)) {
+      state_ = tmp.getValue();
+      state = std::stoi(state_, nullptr, 2);
       n = tmp.getValue().size(); //number of qubits = length of binary string
-      return true;
+      int pos2 = tokens.getPos();
+      if(tokens(TOKEN_TYPE_CONCAT) && tensor.parse(tokens)) {
+        hasTensor = true;
+      } else {
+        hasTensor = false;
+        tokens.setPos(pos2);
+      }
+      if(tokens(TOKEN_TYPE_ANGLE_RIGHT)) {
+        return true;
+      }
     }
     tokens.setPos(pos);
     return false;
   }
 
   virtual Object evaluate(Environment& e, Program& p) const override {
+    if(hasTensor) {
+      auto o = tensor.evaluate(e, p);
+      if(o.getType() != DATATYPE_INT) return OBJECT_NONE;
+      int t = o.castData<int>();
+      std::string state__ = "";
+      for(int i = 0; i < t; i++) state__ += state_;
+      return e.createObject(Qwality::QuantumState(n * t, std::stoi(state__, nullptr, 2)));
+    }
     return e.createObject(Qwality::QuantumState(n, state));
   }
 };
@@ -243,13 +280,7 @@ public:
   }
 };
 
-//literal or variable
-//literal = <decimal number> or |<binary number>>
-//variable = <identifier>
-class ExpressionTypePrimaryAST : public ExpressionType {
-  ExpressionType* expression;
-public:
-  virtual bool parse(TokenStream& tokens) override {
+  bool ExpressionTypePrimaryAST::parse(TokenStream& tokens) {
     int pos = tokens.getPos();
 
     expression = new ExpressionTypeLiteralStateAST();
@@ -282,11 +313,6 @@ public:
       }
     }
   }
-
-  virtual Object evaluate(Environment& e, Program& p) const override {
-    return expression ? expression->evaluate(e, p) : OBJECT_NONE;
-  }
-};
 
 //expr ** ^* ^** *
 class ExpressionTypeSecondaryAST : public ExpressionType {
