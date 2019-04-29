@@ -1,15 +1,4 @@
 R"=====(#Any line not starting with a Q gets ignored
-#- Walking Away -
-#- Warns About -
-#- - - Kewl
-#Quilt
-#- Woke - -
-#- With A Kid
-#- Whites Against KKK
-#- - - Kansas
-#Quick, What's A Kamikaze
-#Q#, What A Knob
---------------------------------------
 QWAK Was Always Koolest
 Quests With Angry Kittens
 Quantum Waffles Are Krusty
